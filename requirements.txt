@@ -24,3 +24,5 @@ lk21
 pytube
 flask
 gunicorn
+certifi
+pycryptodomex
