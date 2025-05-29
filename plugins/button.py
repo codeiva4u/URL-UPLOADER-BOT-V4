@@ -16,7 +16,8 @@ from plugins.functions.display_progress import progress_for_pyrogram, humanbytes
 from plugins.database.database import db
 from PIL import Image
 from plugins.functions.ran_text import random_char
-cookies_file = '/app/cookies.txt'
+from plugins.config import Config
+cookies_file = Config.COOKIES_FILE
 # Set up logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
