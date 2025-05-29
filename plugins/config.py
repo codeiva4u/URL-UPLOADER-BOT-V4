@@ -1,10 +1,13 @@
 import os
 from os import environ, getenv
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logging.basicConfig(
     format='%(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler('log.txt'),
+    handlers=[logging.FileHandler('log.txt', encoding='utf-8'),
               logging.StreamHandler()],
     level=logging.INFO
 )
@@ -12,7 +15,7 @@ logging.basicConfig(
 class Config(object):
     
     BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
-    API_ID = int(os.environ.get("API_ID", ))
+    API_ID = int(os.environ.get("API_ID", "0"))
     API_HASH = os.environ.get("API_HASH", "")
     
     DOWNLOAD_LOCATION = "./DOWNLOADS"

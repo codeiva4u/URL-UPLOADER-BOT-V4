@@ -11,7 +11,7 @@ from pyrogram import enums
 async def progress_for_pyrogram(current, total, ud_type, message, start):
     now = time.time()
     diff = now - start
-    if round(diff % 10.00) == 0 or current == total:
+    if current == total or diff > 1:
         percentage = current * 100 / total
         speed = current / diff
         elapsed_time = round(diff) * 1000
@@ -21,12 +21,12 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         elapsed_time = TimeFormatter(milliseconds=elapsed_time)
         estimated_total_time = TimeFormatter(milliseconds=estimated_total_time)
 
-        progress = "┏━━━━✦[{0}{1}]✦━━━━".format(
-            ''.join(["▣" for i in range(math.floor(percentage / 10))]),
-            ''.join(["▢" for i in range(10 - math.floor(percentage / 10))])
+        progress = "{0}{1}".format(
+            ''.join(["██" for i in range(math.floor(percentage * 0.1))]),
+            ''.join(["░░" for i in range(12 - math.floor(percentage * 0.1))])
         )
 
-        tmp = progress + Translation.PROGRESS.format(
+        tmp = progress + "\nP: {0}%\n".format(round(percentage, 2)) + Translation.PROGRESS.format(
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),

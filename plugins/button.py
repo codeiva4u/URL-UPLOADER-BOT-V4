@@ -95,7 +95,7 @@ async def youtube_dl_call_back(bot, update):
         "--embed-subs",
         "-f", f"{youtube_dl_format}bestvideo+bestaudio/best",
         "--hls-prefer-ffmpeg",
-        "--cookies", "/app/cookies.txt",
+        "--cookies", cookies_file,
         "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         youtube_dl_url,
         "-o", download_directory
@@ -108,7 +108,7 @@ async def youtube_dl_call_back(bot, update):
             "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
             "--bidi-workaround",
             "--extract-audio",
-            "--cookies", "/app/cookies.txt",
+            "--cookies", cookies_file,
             "--audio-format", youtube_dl_ext,
             "--audio-quality", youtube_dl_format,
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -168,15 +168,37 @@ async def youtube_dl_call_back(bot, update):
         if os.path.isfile(download_directory):
             file_size = os.stat(download_directory).st_size
         else:
-            download_directory = os.path.splitext(download_directory)[0] + "." + ".mkv"
-            if os.path.isfile(download_directory):
+            # Try to find the actual downloaded file if the initial path doesn't exist
+            # This handles cases where yt-dlp might save with a different extension
+            actual_file_path = None
+            try:
+                # Get the directory part of the download_directory
+                dir_path = os.path.dirname(download_directory)
+                if os.path.isdir(dir_path):
+                    files_in_dir = os.listdir(dir_path)
+                    if files_in_dir: # Check if the list is not empty
+                        # Assuming the first file is the correct one if multiple exist
+                        # or that yt-dlp only downloads one video file here.
+                        actual_file_path = os.path.join(dir_path, files_in_dir[0])
+            except Exception as e:
+                logger.error(f"Error finding downloaded file: {e}")
+
+            if actual_file_path and os.path.isfile(actual_file_path):
+                download_directory = actual_file_path
                 file_size = os.stat(download_directory).st_size
             else:
-                logger.error(f"Downloaded file not found: {download_directory}")
-                await update.message.edit_caption(
-                    caption=Translation.DOWNLOAD_FAILED
-                )
-                return False
+                # Fallback to the original logic if no file is found or an error occurs
+                # or if the directory was empty
+                original_filename_mkv = os.path.splitext(download_directory)[0] + ".mkv"
+                if os.path.isfile(original_filename_mkv):
+                    download_directory = original_filename_mkv
+                    file_size = os.stat(download_directory).st_size
+                else:
+                    logger.error(f"Downloaded file not found. Original path: {download_directory}, Tried MKV: {original_filename_mkv}")
+                    await update.message.edit_caption(
+                        caption=Translation.DOWNLOAD_FAILED
+                    )
+                    return False
         
         if file_size > Config.TG_MAX_FILE_SIZE:
             await update.message.edit_caption(

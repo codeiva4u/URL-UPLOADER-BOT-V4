@@ -1,24 +1,21 @@
-FROM python:3.10-slim
+# Use an official Python runtime as a parent image
+FROM python:3.12-slim-buster
+
+# Set the working directory in the container
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y ffmpeg jq python3-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for better caching
+# Copy the requirements file into the container at /app
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
 
-# Copy cookies file separately to ensure it's properly included
-COPY cookies.txt /app/cookies.txt
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
+# Copy the rest of the application code into the container at /app
 COPY . .
 
-# Verify yt-dlp installation and cookies file
-RUN python3 -m pip check yt-dlp && \
-    ls -la /app/cookies.txt && \
-    chmod 644 /app/cookies.txt
+# Ensure config.txt is present (as per user's request, though it's covered by COPY . .)
+# If config.txt was not in the root, we would need a specific COPY instruction for it.
 
+# Run bot.py when the container launches
 CMD ["python3", "bot.py"]
