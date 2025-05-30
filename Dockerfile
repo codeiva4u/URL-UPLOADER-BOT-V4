@@ -15,8 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --upgrade yt-dlp
+    && pip install --no-cache-dir -r requirements.txt
+
+# Install/Update yt-dlp to the latest version directly from GitHub
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+    && chmod a+rx /usr/local/bin/yt-dlp \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy cookies.txt specifically and set environment variable
 COPY cookies.txt /app/cookies.txt
