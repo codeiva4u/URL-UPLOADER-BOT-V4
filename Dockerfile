@@ -7,10 +7,10 @@ WORKDIR /app
 # Copy the requirements file into the container at /app
 COPY requirements.txt .
 
-# Install system dependencies that might be needed by packages in requirements.txt
-# Add or remove packages here based on the actual errors you get from pip install
+# Install system dependencies, including ffmpeg
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
 
