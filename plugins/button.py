@@ -6,13 +6,14 @@ import json
 import os
 import shutil
 import time
+import math
 from datetime import datetime
 from pyrogram import enums
 from pyrogram.types import InputMediaPhoto
 from plugins.config import Config
 from plugins.script import Translation
 from plugins.thumbnail import *
-from plugins.functions.display_progress import progress_for_pyrogram, humanbytes
+from plugins.functions.display_progress import progress_for_pyrogram, humanbytes, string_to_bytes
 from plugins.database.database import db
 from PIL import Image
 from plugins.functions.ran_text import random_char
@@ -111,38 +112,71 @@ async def youtube_dl_call_back(bot, update):
         logger.info(f"Processing URL: {youtube_dl_url}")
         logger.info(f"Custom file name: {custom_file_name}")
 
+        # डाउनलोड प्रगति संदेश (यदि आवश्यक हो)
+        # आप चाहें तो इस संदेश को कस्टमाइज़ कर सकते हैं या इसे पूरी तरह से हटा सकते हैं
+        # और केवल अपलोड के दौरान प्रगति दिखा सकते हैं।
+        # अभी के लिए, मैं इसे Translation.DOWNLOAD_START के साथ रखता हूँ।
         # await update.message.edit_caption(
-        #     caption=Translation.DOWNLOAD_START.format(custom_file_name)
-        # ) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+        #     caption=Translation.DOWNLOAD_START.format(custom_file_name) 
+        # )
+
+        # डाउनलोड शुरू होने पर स्थैतिक प्रगति बार दिखाएं
+        ud_type_download_str = "📥 Downloading... 📥"
+        progress_bar_static = ''.join(["░░░░" for i in range(12)])
+        percentage_static = 0.0
+        current_bytes_static = humanbytes(0)
+        total_bytes_static = humanbytes(0) 
+        speed_static = humanbytes(0)
+        eta_static = "0 s"
+
+        progress_details_static = Translation.PROGRESS.format(
+            f"{percentage_static:.2f}",
+            current_bytes_static,
+            total_bytes_static,
+            speed_static,
+            eta_static
+        )
+        
+        tmp_static_payload = (
+            f"File Name: {custom_file_name}\n"
+            f"{progress_bar_static}\n"
+            f"P: {percentage_static:.2f}%\n"
+            f"{progress_details_static}"
+        )
+
+        static_download_caption = Translation.PROGRES.format(ud_type_download_str, tmp_static_payload)
+        
+        await update.message.edit_caption(
+            caption=static_download_caption
+        )
         
         description = Translation.CUSTOM_CAPTION_UL_FILE
         if "fulltitle" in response_json and response_json["fulltitle"]:
-             # सुनिश्चित करें कि fulltitle स्ट्रिंग है
             full_title_str = response_json["fulltitle"]
-            if isinstance(response_json["fulltitle"], list): # यदि यह एक लिस्ट है (जैसा कि कुछ yt-dlp json में हो सकता है)
+            if isinstance(response_json["fulltitle"], list): 
                 full_title_str = response_json["fulltitle"][0]
-
             description = full_title_str[0:1021] if isinstance(full_title_str, str) else Translation.CUSTOM_CAPTION_UL_FILE
-
 
         os.makedirs(tmp_directory_for_each_user, exist_ok=True)
         download_directory = os.path.join(tmp_directory_for_each_user, custom_file_name)
         
         command_to_exec = [
             "yt-dlp",
-            "-c", # रिज्यूमिंग की अनुमति दें
-            "--no-part", # .part फ़ाइलों का उपयोग न करें
+            "-c", 
+            "--no-part", 
             "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
-            "--embed-subs", # सबटाइटल एम्बेड करें यदि उपलब्ध हो
-            "-f", f"{youtube_dl_format}bestvideo+bestaudio/best", # सर्वश्रेष्ठ गुणवत्ता चुनें
-            "--hls-prefer-ffmpeg", # HLS के लिए ffmpeg को प्राथमिकता दें
+            "--embed-subs", 
+            "-f", f"{youtube_dl_format}bestvideo+bestaudio/best", 
+            "--hls-prefer-ffmpeg", 
+            "--progress-hooks", # Use progress hooks for JSON output
+            "--progress-template", "hook:{\"status\": \"%(progress.status)s\", \"downloaded_bytes\": \"%(progress._downloaded_bytes_str)s\", \"total_bytes\": \"%(progress._total_bytes_str)s\", \"total_bytes_estimate\": \"%(progress._total_bytes_estimate_str)s\", \"speed\": \"%(progress._speed_str)s\", \"eta\": \"%(progress._eta_str)s\", \"filename\": \"%(info.filename)s\", \"percentage\": \"%(progress._percent_str)s\"}"
         ]
         if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
             command_to_exec.extend(["--cookies", cookies_file])
         command_to_exec.extend([
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             youtube_dl_url,
-            "-o", download_directory # आउटपुट टेम्प्लेट
+            "-o", download_directory 
         ])
         
         if tg_send_type == "audio":
@@ -151,14 +185,16 @@ async def youtube_dl_call_back(bot, update):
                 "-c",
                 "--no-part",
                 "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
-                "--bidi-workaround", # द्वि-दिशात्मक टेक्स्ट समस्याओं के लिए
+                "--bidi-workaround", 
                 "--extract-audio",
+                "--progress-hooks", # Use progress hooks for JSON output
+                "--progress-template", "hook:{\"status\": \"%(progress.status)s\", \"downloaded_bytes\": \"%(progress._downloaded_bytes_str)s\", \"total_bytes\": \"%(progress._total_bytes_str)s\", \"total_bytes_estimate\": \"%(progress._total_bytes_estimate_str)s\", \"speed\": \"%(progress._speed_str)s\", \"eta\": \"%(progress._eta_str)s\", \"filename\": \"%(info.filename)s\", \"percentage\": \"%(progress._percent_str)s\"}"
             ]
             if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
                 command_to_exec.extend(["--cookies", cookies_file])
             command_to_exec.extend([
                 "--audio-format", youtube_dl_ext,
-                "--audio-quality", youtube_dl_format, # 0 (सर्वश्रेष्ठ) से 9 (सबसे खराब)
+                "--audio-quality", youtube_dl_format, 
                 "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
                 youtube_dl_url,
                 "-o", download_directory
@@ -171,38 +207,118 @@ async def youtube_dl_call_back(bot, update):
         if youtube_dl_password:
             command_to_exec.extend(["--password", youtube_dl_password])
         
-        command_to_exec.append("--no-warnings") # yt-dlp से चेतावनियां न दिखाएं
+        command_to_exec.append("--no-warnings") 
         
         logger.info(f"Executing command: {' '.join(command_to_exec)}")
         start_time_download = datetime.now()
         
+        # yt-dlp से डाउनलोड प्रगति को कैप्चर करना मुश्किल है क्योंकि यह stdout पर प्रिंट करता है
+        # और इसे parse करना होगा। Pyrogram का progress callback अपलोड के लिए है।
+        # डाउनलोड के लिए, हम केवल एक सामान्य "Downloading..." संदेश दिखा सकते हैं।
+        # या yt-dlp के stdout को लगातार पढ़ने और संदेश को अपडेट करने के लिए एक अधिक जटिल समाधान लागू करें।
+        # सिंप्लिसिटी के लिए, हम डाउनलोड के दौरान एक स्थिर संदेश रखेंगे।
+
         process = await asyncio.create_subprocess_exec(
             *command_to_exec,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
         
-        stdout, stderr = await process.communicate()
-        e_response = stderr.decode().strip()
-        t_response = stdout.decode().strip() # yt-dlp से स्टैंडर्ड आउटपुट (आमतौर पर JSON यदि -j का उपयोग किया जाता है, या प्रगति)
+        # stdout, stderr = await process.communicate() # We will read stdout line by line
+
+        last_update_time = time.time()
+        # DOWNLOAD_START and other variables are already defined from the static part.
+        # We'll reuse them or update as needed.
+        
+        async for line_bytes in process.stdout:
+            line = line_bytes.decode('utf-8', errors='ignore').strip()
+            if line.startswith("hook:"):
+                try:
+                    progress_data_json = line[len("hook:"):]
+                    progress_data = json.loads(progress_data_json)
+
+                    status = progress_data.get("status")
+                    if status == "downloading":
+                        current_time = time.time()
+                        if current_time - last_update_time < Config.EDIT_SLEEP_TIME_OUT: # Update message sparingly
+                            continue
+                        last_update_time = current_time
+
+                        downloaded_bytes_str = progress_data.get("downloaded_bytes", "0B")
+                        total_bytes_str = progress_data.get("total_bytes") or progress_data.get("total_bytes_estimate", "0B")
+                        
+                        current = string_to_bytes(downloaded_bytes_str)
+                        total = string_to_bytes(total_bytes_str)
+                        
+                        # Ensure total is not zero to avoid division by zero
+                        if total == 0 and current > 0: # If total is unknown but we have current bytes
+                            percentage = 0 # Or handle as unknown progress
+                        elif total == 0 and current == 0:
+                             percentage = 0
+                        else:
+                            percentage = (current * 100) / total if total > 0 else 0.0
+
+
+                        speed_str = progress_data.get("speed", "0B/s")
+                        eta_str = progress_data.get("eta", "0s")
+                        filename_progress = progress_data.get("filename", custom_file_name) # Use actual filename if available
+
+                        # Use progress_for_pyrogram arguments style to build the message
+                        # progress bar generation
+                        progress_bar = "{0}{1}".format(
+                            ''.join(["████" for i in range(math.floor(percentage * 0.1))]),
+                            ''.join(["░░░░" for i in range(12 - math.floor(percentage * 0.1))])
+                        )
+
+                        progress_details = Translation.PROGRESS.format(
+                            f"{percentage:.2f}",
+                            humanbytes(current),
+                            humanbytes(total) if total > 0 else "Unknown", # Show unknown if total is 0
+                            speed_str, # yt-dlp provides speed already formatted
+                            eta_str    # yt-dlp provides eta already formatted
+                        )
+                        
+                        # Include filename in the tmp_payload if desired, or stick to custom_file_name
+                        tmp_payload = (
+                            f"File Name: {os.path.basename(filename_progress)}\n" 
+                            f"{progress_bar}\n"
+                            f"P: {percentage:.2f}%\n"
+                            f"{progress_details}"
+                        )
+                        
+                        download_caption = Translation.PROGRES.format(ud_type_download_str, tmp_payload)
+                        
+                        try:
+                            await update.message.edit_caption(caption=download_caption)
+                        except Exception as e_edit:
+                            logger.warning(f"Error updating download progress caption: {e_edit}")
+                    elif status == "finished":
+                        logger.info(f"yt-dlp status: finished for {progress_data.get('filename')}")
+                    elif status == "error":
+                         logger.error(f"yt-dlp status: error for {progress_data.get('filename')}")
+
+                except json.JSONDecodeError:
+                    logger.debug(f"yt-dlp non-JSON stdout: {line}") # Log non-JSON lines for debugging
+                except Exception as e_prog:
+                    logger.error(f"Error processing yt-dlp progress line: {e_prog} | Line: {line}")
+            else:
+                if line: # Log other non-empty stdout lines
+                    logger.info(f"yt-dlp other stdout: {line}")
+
+        await process.wait() # Wait for the process to complete
+        
+        stderr_bytes = await process.stderr.read() # Read stderr after process completion
+        e_response = stderr_bytes.decode().strip()
+        # t_response = stdout.decode().strip() # stdout was consumed line by line
         
         logger.info(f"yt-dlp stderr: {e_response}")
-        logger.info(f"yt-dlp stdout: {t_response}") # यदि -j नहीं है, तो यह डाउनलोड प्रगति हो सकती है
-        
-        if process.returncode != 0:
-            logger.error(f"yt-dlp command failed with return code {process.returncode}. Error: {e_response}")
-            error_display = e_response if e_response else "yt-dlp failed, check logs."
-            await update.message.edit_caption(caption=f"Error: {error_display[:1000]}")
-            return 
-
-        # yt-dlp सफल रहा, लेकिन सुनिश्चित करें कि फ़ाइल वास्तव में डाउनलोड हुई है
-        # (yt-dlp कभी-कभी 0 रिटर्न करता है भले ही फ़ाइल न बनी हो, खासकर यदि --no-part का उपयोग किया जाता है)
+        # logger.info(f"yt-dlp stdout: {t_response}") # t_response no longer holds full stdout
 
         end_time_download = datetime.now()
         time_taken_for_download = (end_time_download - start_time_download).seconds
         
         file_size = 0
-        actual_downloaded_file_path = download_directory # इसे डिफ़ॉल्ट रूप से सेट करें
+        actual_downloaded_file_path = download_directory 
         
         if os.path.exists(download_directory) and os.path.isfile(download_directory):
             file_size = os.stat(download_directory).st_size
@@ -213,14 +329,9 @@ async def youtube_dl_call_back(bot, update):
             found_alternative = False
             if os.path.exists(tmp_directory_for_each_user) and os.path.isdir(tmp_directory_for_each_user):
                 files_in_dir = os.listdir(tmp_directory_for_each_user)
-                # json फ़ाइल को अनदेखा करें
                 potential_files = [f for f in files_in_dir if not f.endswith(f"{ranom}.json")]
                 if potential_files:
-                    # मान लें कि सबसे बड़ी फ़ाइल या एकमात्र फ़ाइल ही हमारी डाउनलोड की गई फ़ाइल है
-                    # (या वह फ़ाइल जो custom_file_name के समान नाम से शुरू होती है)
-                    target_file_in_dir = potential_files[0] # सरलतम मामला: पहली फ़ाइल लें
-                    # अधिक मजबूत लॉजिक यहाँ जोड़ा जा सकता है यदि आवश्यक हो
-                    
+                    target_file_in_dir = potential_files[0] 
                     actual_downloaded_file_path = os.path.join(tmp_directory_for_each_user, target_file_in_dir)
                     if os.path.isfile(actual_downloaded_file_path):
                         file_size = os.stat(actual_downloaded_file_path).st_size
@@ -236,9 +347,9 @@ async def youtube_dl_call_back(bot, update):
                 await update.message.edit_caption(caption=Translation.DOWNLOAD_FAILED + " (File not found after download)")
                 return
 
-        download_directory = actual_downloaded_file_path # सुनिश्चित करें कि हम सही फ़ाइल पाथ का उपयोग कर रहे हैं
+        download_directory = actual_downloaded_file_path 
 
-        if file_size == 0: # यदि फ़ाइल का आकार 0 है, तो यह एक समस्या है
+        if file_size == 0: 
             logger.error(f"Downloaded file {download_directory} has size 0.")
             await update.message.edit_caption(caption=Translation.DOWNLOAD_FAILED + " (File size is 0)")
             return
@@ -249,9 +360,10 @@ async def youtube_dl_call_back(bot, update):
             )
             return 
         
-        # await update.message.edit_caption(
-        #     caption=Translation.UPLOAD_START.format(os.path.basename(download_directory)) # वास्तविक फ़ाइल नाम का उपयोग करें
-        # ) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+        # अपलोड प्रगति संदेश
+        # यहाँ Translation.UPLOAD_START का उपयोग किया जा सकता है, या एक सरल "Uploading..."
+        upload_caption = Translation.UPLOAD_START.format(os.path.basename(download_directory))
+        await update.message.edit_caption(caption=upload_caption) 
         
         upload_start_time = time.time()
 
@@ -260,55 +372,61 @@ async def youtube_dl_call_back(bot, update):
             thumb_to_remove_path = await Gthumb01(bot, update)
             await update.message.reply_audio(
                 audio=download_directory, caption=description, duration=duration,
-                thumb=thumb_to_remove_path
-                # progress=progress_for_pyrogram, # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
-                # progress_args=(Translation.UPLOAD_START, update.message, upload_start_time) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+                thumb=thumb_to_remove_path,
+                progress=progress_for_pyrogram,
+                progress_args=(upload_caption, update.message, upload_start_time)
             )
         elif tg_send_type == "vm":
             width, duration = await Mdata02(download_directory)
             thumb_to_remove_path = await Gthumb02(bot, update, duration, download_directory)
             await update.message.reply_video_note(
                 video_note=download_directory, duration=duration, length=width,
-                thumb=thumb_to_remove_path
-                # progress=progress_for_pyrogram, # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
-                # progress_args=(Translation.UPLOAD_START, update.message, upload_start_time) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+                thumb=thumb_to_remove_path,
+                progress=progress_for_pyrogram,
+                progress_args=(upload_caption, update.message, upload_start_time)
             )
         elif not await db.get_upload_as_doc(update.from_user.id):
             thumb_to_remove_path = await Gthumb01(bot, update)
             await update.message.reply_document(
-                document=download_directory, thumb=thumb_to_remove_path, caption=description
-                # progress=progress_for_pyrogram, # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
-                # progress_args=(Translation.UPLOAD_START, update.message, upload_start_time) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+                document=download_directory, thumb=thumb_to_remove_path, caption=description,
+                progress=progress_for_pyrogram,
+                progress_args=(upload_caption, update.message, upload_start_time)
             )
-        else: # वीडियो के रूप में भेजें
+        else: 
             width, height, duration = await Mdata01(download_directory)
             thumb_to_remove_path = await Gthumb02(bot, update, duration, download_directory)
             await update.message.reply_video(
                 video=download_directory, caption=description, duration=duration, width=width, height=height,
-                supports_streaming=True, thumb=thumb_to_remove_path
-                # progress=progress_for_pyrogram, # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
-                # progress_args=(Translation.UPLOAD_START, update.message, upload_start_time) # उपयोगकर्ता के अनुरोध के अनुसार हटाया गया
+                supports_streaming=True, thumb=thumb_to_remove_path,
+                progress=progress_for_pyrogram,
+                progress_args=(upload_caption, update.message, upload_start_time)
             )
         
         logger.info(f"✅ Uploaded: {os.path.basename(download_directory)}")
-        # upload_end_time = datetime.now() # इसकी आवश्यकता नहीं क्योंकि हम time.time() का उपयोग कर रहे हैं
         time_taken_for_upload = int(time.time() - upload_start_time)
-
 
         logger.info(f"✅ Downloaded in: {time_taken_for_download} seconds")
         logger.info(f"✅ Uploaded in: {time_taken_for_upload} seconds")
         
         try:
-            # अंतिम संदेश मूल CallbackQuery संदेश को एडिट करके भेजें
-            await update.message.edit_caption(caption=Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload))
+            final_caption = Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload)
+            # सुनिश्चित करें कि अंतिम कैप्शन मूल संदेश को एडिट करे, न कि नए रिप्लाई को
+            if update.message.caption:
+                 await update.message.edit_caption(caption=final_caption)
+            else:
+                # यदि मूल संदेश में कोई कैप्शन नहीं था (जो कॉलबैक क्वेरी के लिए असामान्य है),
+                # तो अंतिम फ़ाइल के साथ एक नया संदेश भेजें या मौजूदा को एडिट करने का प्रयास करें।
+                # सिंप्लिसिटी के लिए, हम मानते हैं कि update.message में हमेशा कैप्शन होता है जिसे एडिट किया जा सकता है।
+                # यदि reply_audio/video आदि एक नया संदेश लौटाते हैं, तो उसे एडिट करना होगा।
+                # वर्तमान में, वे None लौटाते हैं, इसलिए हम update.message (कॉलबैक क्वेरी का संदेश) को एडिट करते हैं।
+                pass # edit_caption ऊपर किया गया है
+
         except Exception as e_edit_final:
             logger.warning(f"Could not edit final success message: {e_edit_final}")
-
 
     except Exception as e:
         logger.error(f"An error occurred in youtube_dl_call_back: {e}", exc_info=True)
         try:
-            # त्रुटि होने पर भी मूल CallbackQuery संदेश को एडिट करें
             await update.message.edit_caption(caption=f"An unexpected error occurred. Please check logs or try again.")
         except Exception as e_edit:
             logger.error(f"Failed to edit caption on error: {e_edit}")
