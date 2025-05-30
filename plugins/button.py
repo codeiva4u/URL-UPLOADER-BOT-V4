@@ -104,7 +104,7 @@ async def youtube_dl_call_back(bot, update):
         logger.info(f"Custom file name: {custom_file_name}")
 
         await update.message.edit_caption(
-            caption=Translation.DOWNLOAD_START.format(custom_file_name)
+            caption=Translation.DOWNLOAD_START.format(custom_file_name, "")
         )
         
         description = Translation.CUSTOM_CAPTION_UL_FILE
