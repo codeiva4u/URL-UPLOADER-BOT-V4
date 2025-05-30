@@ -4,8 +4,6 @@ FROM python:3.12-slim-bookworm
 # Set the working directory in the container
 WORKDIR /app
 
-ENV COOKIES_FILE_PATH /app/cookies.txt
-
 # Copy the requirements file into the container at /app
 COPY requirements.txt .
 
