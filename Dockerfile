@@ -18,6 +18,10 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --upgrade yt-dlp
 
+# Copy cookies.txt specifically and set environment variable
+COPY cookies.txt /app/cookies.txt
+ENV COOKIES_FILE_PATH=/app/cookies.txt
+
 # Copy the rest of the application code into the container at /app
 COPY . /app
 
