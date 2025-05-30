@@ -1,9 +1,9 @@
+
 import math
 import time
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.script import Translation
 from pyrogram import enums 
-import re
 
 
 
@@ -22,8 +22,8 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         estimated_total_time = TimeFormatter(milliseconds=estimated_total_time)
 
         progress = "{0}{1}".format(
-            ''.join(["████" for i in range(math.floor(percentage * 0.1))]),
-            ''.join(["░░░░" for i in range(12 - math.floor(percentage * 0.1))])
+            ''.join(["██" for i in range(math.floor(percentage * 0.1))]),
+            ''.join(["░░" for i in range(12 - math.floor(percentage * 0.1))])
         )
 
         tmp = progress + "\nP: {0}%\n".format(round(percentage, 2)) + Translation.PROGRESS.format(
@@ -51,46 +51,6 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         except:
             pass
 
-
-def string_to_bytes(size_str: str) -> int:
-    size_str = size_str.strip().upper()
-    if not size_str or size_str == "UNKNOWNB":
-        return 0
-
-    multipliers = {
-        'B': 1,
-        'K': 2**10, 'KB': 2**10, 'KIB': 2**10,
-        'M': 2**20, 'MB': 2**20, 'MIB': 2**20,
-        'G': 2**30, 'GB': 2**30, 'GIB': 2**30,
-        'T': 2**40, 'TB': 2**40, 'TIB': 2**40,
-    }
-    
-    match = re.match(r"^([\d\.]+)\s*([KMGT]?I?B|[KMGTB])?$", size_str)
-    if not match:
-        if re.match(r"^[\d\.]+$", size_str):
-            return int(float(size_str))
-        return 0
-
-    value_str, unit = match.groups()
-    value = float(value_str)
-
-    if unit is None:
-        unit = 'B'
-    
-    multiplier = 1
-    for key_suffix in [unit, unit + 'B' if not unit.endswith('B') else None]:
-        if key_suffix is None:
-            continue
-        normalized_unit = key_suffix
-        if "IB" not in normalized_unit and len(normalized_unit) > 1 and normalized_unit.endswith("B"):
-             if normalized_unit[:-1] in multipliers:
-                 multiplier = multipliers.get(normalized_unit[:-1], 1)
-                 break
-        if normalized_unit in multipliers:
-            multiplier = multipliers.get(normalized_unit, 1)
-            break
-            
-    return int(value * multiplier)
 
 def humanbytes(size):
     # https://stackoverflow.com/a/49361727/4723940
