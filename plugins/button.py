@@ -96,11 +96,14 @@ async def youtube_dl_call_back(bot, update):
         "--embed-subs",
         "-f", f"{youtube_dl_format}bestvideo+bestaudio/best",
         "--hls-prefer-ffmpeg",
-        "--cookies", cookies_file,
+    ]
+    if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
+        command_to_exec.extend(["--cookies", cookies_file])
+    command_to_exec.extend([
         "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         youtube_dl_url,
         "-o", download_directory
-    ]
+    ])
     
     if tg_send_type == "audio":
         command_to_exec = [
@@ -109,13 +112,16 @@ async def youtube_dl_call_back(bot, update):
             "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
             "--bidi-workaround",
             "--extract-audio",
-            "--cookies", cookies_file,
+        ]
+        if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
+            command_to_exec.extend(["--cookies", cookies_file])
+        command_to_exec.extend([
             "--audio-format", youtube_dl_ext,
             "--audio-quality", youtube_dl_format,
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             youtube_dl_url,
             "-o", download_directory
-        ]
+        ])
     
     if Config.HTTP_PROXY:
         command_to_exec.extend(["--proxy", Config.HTTP_PROXY])
