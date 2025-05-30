@@ -55,6 +55,6 @@ class Config(object):
 
     # Verification video link
     VERIFICATION = os.environ.get("VERIFICATION", "")
-    COOKIES_FILE = os.environ.get("COOKIES_FILE_PATH", "cookies.txt")
+    COOKIES_FILE = os.environ.get("COOKIES_FILE_PATH", "/app/cookies.txt")
 
     
