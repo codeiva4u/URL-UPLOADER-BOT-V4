@@ -121,6 +121,7 @@ async def echo(bot, update):
         command_to_exec = [
             "yt-dlp",
             "--no-warnings",
+            "--cookies", "cookies.txt",
             "--allow-dynamic-mpd",
             "--cookies", cookies_file,
             "--no-check-certificate",

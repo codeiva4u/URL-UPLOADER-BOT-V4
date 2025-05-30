@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code into the container at /app
+COPY cookies.txt .
 COPY . .
 
 # Run bot.py when the container launches
