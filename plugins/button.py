@@ -124,8 +124,9 @@ async def youtube_dl_call_back(bot, update):
             "--no-part",
             "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
             "--embed-subs",
-            "-f", f"{youtube_dl_format}bestvideo+bestaudio/best",
+            "-f", f"bestvideo[height<={youtube_dl_format}]+bestaudio/best[height<={youtube_dl_format}]",
             "--hls-prefer-ffmpeg",
+            "--merge-output-format", "mp4"
         ]
         if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
             command_to_exec.extend(["--cookies", cookies_file])
