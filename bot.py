@@ -6,7 +6,7 @@
 import os
 import time
 import logging
-from pyrogram import Client
+from pyrogram import Client as PyrogramClient
 from pyrogram.errors import FloodWait
 from plugins.config import Config
 
@@ -22,7 +22,7 @@ def run_bot():
         os.makedirs(Config.DOWNLOAD_LOCATION)
     
     plugins = dict(root="plugins")
-    Client = Client(
+    client = PyrogramClient(
         "@UploaderXNTBot",
         bot_token=Config.BOT_TOKEN,
         api_id=Config.API_ID,
@@ -39,7 +39,7 @@ def run_bot():
         try:
             logger.info("Starting bot...")
             print("🎊 I AM ALIVE 🎊  • Support @NT_BOTS_SUPPORT")
-            Client.run()
+            client.run()
             break
         except FloodWait as e:
             wait_time = e.value
