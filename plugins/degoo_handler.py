@@ -148,7 +148,7 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
         
         try:
             # Create a filter for the specific chat and user
-            def message_filter(message):
+            def message_filter(client, message):
                 return message.chat.id == update.chat.id and message.from_user.id == update.from_user.id
 
             # Wait for the message with the filter
