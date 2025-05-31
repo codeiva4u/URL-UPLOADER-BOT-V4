@@ -7,7 +7,7 @@ import os
 import time
 import logging
 from pyrogram import Client as PyrogramClient
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, RPCError
 from plugins.config import Config
 
 # Configure logging
@@ -31,9 +31,9 @@ def run_bot():
         plugins=plugins
     )
     
-    max_retries = 5
+    max_retries = 10  # Increased max retries
     retry_count = 0
-    base_delay = 2  # Base delay in seconds
+    base_delay = 5  # Increased base delay
     
     while retry_count < max_retries:
         try:
@@ -47,10 +47,20 @@ def run_bot():
             print(f"⚠️ FloodWait error: Need to wait {wait_time} seconds")
             time.sleep(wait_time)
             retry_count += 1
-        except Exception as e:
-            logger.error(f"Error occurred: {str(e)}")
+        except RPCError as e:
+            logger.error(f"RPC Error occurred: {str(e)}")
             if retry_count < max_retries - 1:
                 delay = base_delay * (2 ** retry_count)  # Exponential backoff
+                logger.info(f"Retrying in {delay} seconds... (Attempt {retry_count + 1}/{max_retries})")
+                time.sleep(delay)
+                retry_count += 1
+            else:
+                logger.error("Max retries reached. Giving up.")
+                raise
+        except Exception as e:
+            logger.error(f"Unexpected error occurred: {str(e)}")
+            if retry_count < max_retries - 1:
+                delay = base_delay * (2 ** retry_count)
                 logger.info(f"Retrying in {delay} seconds... (Attempt {retry_count + 1}/{max_retries})")
                 time.sleep(delay)
                 retry_count += 1

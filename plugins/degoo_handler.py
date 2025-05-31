@@ -147,9 +147,14 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
         status_message = await update.reply_text(text="Please send your Degoo email and password in this format:\n\nemail:password")
         
         try:
+            # Create a filter for the specific chat and user
+            def message_filter(message):
+                return message.chat.id == update.chat.id and message.from_user.id == update.from_user.id
+
+            # Wait for the message with the filter
             response = await bot.wait_for_message(
                 chat_id=update.chat.id,
-                user_id=update.from_user.id,
+                filters=message_filter,
                 timeout=300
             )
             

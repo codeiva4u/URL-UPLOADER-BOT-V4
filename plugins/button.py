@@ -192,7 +192,7 @@ async def youtube_dl_call_back(bot, update):
         command_to_exec.extend([
             youtube_dl_url,
             "-o", os.path.join(tmp_directory_for_each_user, "%(playlist_index)s-%(title)s.%(ext)s")
-        ])
+            ])
         
         if Config.HTTP_PROXY:
             command_to_exec.extend(["--proxy", Config.HTTP_PROXY])
