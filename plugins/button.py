@@ -21,6 +21,7 @@ import aiohttp
 import re
 import random
 import string
+import base64
 
 cookies_file = Config.COOKIES_FILE
 # Set up logging
@@ -59,6 +60,32 @@ async def generate_degoo_cookies():
         logger.error(f"Error generating Degoo cookies: {e}")
         return False
 
+async def extract_degoo_url(url):
+    try:
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Origin": "https://app.degoo.com",
+                "Referer": "https://app.degoo.com/"
+            }
+            
+            # Extract share ID from URL
+            share_id = url.split('/')[-1]
+            
+            # Get share info
+            share_url = f"https://app.degoo.com/api/share/{share_id}"
+            async with session.get(share_url, headers=headers) as response:
+                if response.status == 200:
+                    share_data = await response.json()
+                    if 'files' in share_data:
+                        return share_data['files']
+                return None
+    except Exception as e:
+        logger.error(f"Error extracting Degoo URL: {e}")
+        return None
+
 async def youtube_dl_call_back(bot, update):
     cb_data = update.data
     tg_send_type, youtube_dl_format, youtube_dl_ext, ranom = cb_data.split("|")
@@ -84,6 +111,14 @@ async def youtube_dl_call_back(bot, update):
         
         # Check if URL is Degoo
         if "degoo.com" in youtube_dl_url:
+            await update.message.edit_caption(caption="Processing Degoo URL...")
+            
+            # Extract files from Degoo URL
+            files = await extract_degoo_url(youtube_dl_url)
+            if not files:
+                await update.message.edit_caption(caption="Failed to extract files from Degoo URL!")
+                return
+                
             # Generate cookies if not exists
             if not os.path.exists(Config.COOKIES_FILE):
                 await update.message.edit_caption(caption="Generating Degoo cookies...")
@@ -92,6 +127,45 @@ async def youtube_dl_call_back(bot, update):
                 else:
                     await update.message.edit_caption(caption="Failed to generate Degoo cookies!")
                     return
+            
+            # Download each file
+            for file in files:
+                file_url = file.get('download_url')
+                if file_url:
+                    command_to_exec = [
+                        "curl",
+                        "-L",
+                        "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "-H", "Accept: */*",
+                        "-H", "Accept-Language: en-US,en;q=0.9",
+                        "-H", f"Origin: https://app.degoo.com",
+                        "-H", f"Referer: {youtube_dl_url}",
+                        "-o", os.path.join(tmp_directory_for_each_user, file.get('name', 'file')),
+                        file_url
+                    ]
+                    
+                    process = await asyncio.create_subprocess_exec(
+                        *command_to_exec,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                    
+                    stdout, stderr = await process.communicate()
+                    
+                    if process.returncode != 0:
+                        logger.error(f"Error downloading file: {stderr.decode()}")
+                        continue
+                    
+                    # Upload the file
+                    file_path = os.path.join(tmp_directory_for_each_user, file.get('name', 'file'))
+                    if os.path.exists(file_path):
+                        await update.message.reply_document(
+                            document=file_path,
+                            caption=f"Downloaded from Degoo: {file.get('name', 'file')}"
+                        )
+            
+            await update.message.edit_caption(caption="All files downloaded successfully!")
+            return
 
         video_title = response_json.get('title', 'Untitled Video')
         if not video_title:
