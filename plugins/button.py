@@ -17,7 +17,6 @@ from plugins.database.database import db
 from PIL import Image
 from plugins.functions.ran_text import random_char
 from plugins.config import Config
-
 cookies_file = Config.COOKIES_FILE
 # Set up logging
 logging.basicConfig(level=logging.DEBUG,
@@ -35,9 +34,6 @@ async def youtube_dl_call_back(bot, update):
     thumb_to_remove_path = None
 
     try:
-        youtube_dl_url = update.message.reply_to_message.text
-        
-        # For non-Degoo URLs, use yt-dlp
         try:
             with open(save_ytdl_json_path, "r", encoding="utf8") as f:
                 response_json = json.load(f)
@@ -49,6 +45,7 @@ async def youtube_dl_call_back(bot, update):
                 logger.error(f"Error deleting message after JSON not found: {del_err}")
             return
 
+        youtube_dl_url = update.message.reply_to_message.text
         video_title = response_json.get('title', 'Untitled Video')
         if not video_title:
             video_title = 'Untitled Video'
@@ -107,7 +104,7 @@ async def youtube_dl_call_back(bot, update):
         logger.info(f"Custom file name: {custom_file_name}")
 
         await update.message.edit_caption(
-            caption=Translation.DOWNLOAD_START.format(custom_file_name, "")
+            caption=Translation.DOWNLOAD_START.format(custom_file_name)
         )
         
         description = Translation.CUSTOM_CAPTION_UL_FILE
@@ -127,71 +124,36 @@ async def youtube_dl_call_back(bot, update):
             "--no-part",
             "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
             "--embed-subs",
-            "-f", f"bestvideo[height<={youtube_dl_format}]+bestaudio/best[height<={youtube_dl_format}]",
+            "-f", f"{youtube_dl_format}+bestaudio/best",
             "--hls-prefer-ffmpeg",
-            "--merge-output-format", "mp4",
-            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "--referer", "https://app.degoo.com/",
-            "--add-header", "Accept: */*",
-            "--add-header", "Accept-Language: en-US,en;q=0.9",
-            "--add-header", "Origin: https://app.degoo.com",
-            "--add-header", "Sec-Fetch-Dest: empty",
-            "--add-header", "Sec-Fetch-Mode: cors",
-            "--add-header", "Sec-Fetch-Site: same-origin",
-            "--extractor-args", "degoo:headers={'Accept': '*/*', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'https://app.degoo.com', 'Referer': 'https://app.degoo.com/'}",
-            "--downloader-args", "http:headers={'Accept': '*/*', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'https://app.degoo.com', 'Referer': 'https://app.degoo.com/'}",
-            "--retries", "10",
-            "--fragment-retries", "10",
-            "--file-access-retries", "10",
-            "--extractor-retries", "10",
-            "--retry-sleep", "5",
-            "--yes-playlist",
-            "--extract-audio",
-            "--audio-format", "mp3",
-            "--audio-quality", "0",
-            "--embed-metadata",
-            "--add-metadata",
-            "--playlist-reverse",
-            "--no-playlist-reverse",
-            "--playlist-items", "all",
-            "--extractor-args", "degoo:playlist=True",
-            "--extractor-args", "degoo:playlist_items=all",
-            "--extractor-args", "degoo:playlist_reverse=False",
-            "--extractor-args", "degoo:playlist_start=1",
-            "--extractor-args", "degoo:playlist_end=0",
-            "--extractor-args", "degoo:playlist_min_items=1",
-            "--extractor-args", "degoo:playlist_max_items=0"
+            "--no-check-certificate",
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         ]
-        # Add cookies if available
         if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
             command_to_exec.extend(["--cookies", cookies_file])
-        else:
-            # Create default Degoo cookies if not exists
-            default_cookies = {
-                "cookies": [
-                    {
-                        "domain": "app.degoo.com",
-                        "name": "session",
-                        "value": "your_session_value_here"
-                    },
-                    {
-                        "domain": "app.degoo.com",
-                        "name": "auth_token",
-                        "value": "your_auth_token_here"
-                    }
-                ]
-            }
-            try:
-                with open(cookies_file, 'w') as f:
-                    json.dump(default_cookies, f)
-                command_to_exec.extend(["--cookies", cookies_file])
-                logger.info("Created default Degoo cookies file")
-            except Exception as e:
-                logger.error(f"Error creating cookies file: {e}")
-        
         command_to_exec.extend([
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             youtube_dl_url,
-            "-o", os.path.join(tmp_directory_for_each_user, "%(playlist_index)s-%(title)s.%(ext)s")
+            "-o", download_directory
+        ])
+        
+        if tg_send_type == "audio":
+            command_to_exec = [
+                "yt-dlp",
+                "-c",
+                "--no-part",
+                "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
+                "--bidi-workaround",
+                "--extract-audio",
+            ]
+            if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
+                command_to_exec.extend(["--cookies", cookies_file])
+            command_to_exec.extend([
+                "--audio-format", youtube_dl_ext,
+                "--audio-quality", youtube_dl_format,
+                "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                youtube_dl_url,
+                "-o", download_directory
             ])
         
         if Config.HTTP_PROXY:
@@ -330,24 +292,74 @@ async def youtube_dl_call_back(bot, update):
     finally:
         logger.info(f"Cleaning up temporary files for user {update.from_user.id}...")
         try:
+            # Clean up JSON file
             if save_ytdl_json_path and os.path.exists(save_ytdl_json_path):
+                os.chmod(save_ytdl_json_path, 0o777)
                 os.remove(save_ytdl_json_path)
                 logger.info(f"Removed JSON file: {save_ytdl_json_path}")
         except Exception as e_json:
             logger.error(f"Error removing JSON file {save_ytdl_json_path}: {e_json}")
 
         try:
+            # Clean up thumbnail
             if thumb_to_remove_path and os.path.exists(thumb_to_remove_path):
+                os.chmod(thumb_to_remove_path, 0o777)
                 os.remove(thumb_to_remove_path)
                 logger.info(f"Removed thumbnail file: {thumb_to_remove_path}")
         except Exception as e_thumb:
             logger.error(f"Error removing thumbnail {thumb_to_remove_path}: {e_thumb}")
 
         try:
+            # Clean up download directory
             if tmp_directory_for_each_user and os.path.exists(tmp_directory_for_each_user):
-                shutil.rmtree(tmp_directory_for_each_user)
-                logger.info(f"Removed temporary directory: {tmp_directory_for_each_user}")
+                await force_cleanup_directory(tmp_directory_for_each_user)
         except Exception as e_dir:
-            logger.error(f"Error removing temporary directory {tmp_directory_for_each_user}: {e_dir}")
+            logger.error(f"Error in cleanup process for directory {tmp_directory_for_each_user}: {e_dir}")
         
         logger.info(f"Cleanup process finished for user {update.from_user.id}.")
+
+async def force_cleanup_directory(directory_path, max_retries=3, retry_delay=1):
+    """Force cleanup a directory and all its contents with retries"""
+    if not os.path.exists(directory_path):
+        return
+        
+    for attempt in range(max_retries):
+        try:
+            # First try to close any open file handles
+            import gc
+            gc.collect()
+            
+            # Try to remove individual files first
+            for root, dirs, files in os.walk(directory_path, topdown=False):
+                for name in files:
+                    try:
+                        file_path = os.path.join(root, name)
+                        os.chmod(file_path, 0o777)  # Give full permissions
+                        os.remove(file_path)
+                        logger.info(f"Removed file: {file_path}")
+                    except Exception as e:
+                        logger.warning(f"Could not remove file {name}: {e}")
+                
+                # Remove directories
+                for name in dirs:
+                    try:
+                        dir_path = os.path.join(root, name)
+                        os.chmod(dir_path, 0o777)
+                        os.rmdir(dir_path)
+                        logger.info(f"Removed directory: {dir_path}")
+                    except Exception as e:
+                        logger.warning(f"Could not remove directory {name}: {e}")
+            
+            # Finally remove the main directory
+            os.chmod(directory_path, 0o777)
+            os.rmdir(directory_path)
+            logger.info(f"Successfully removed directory: {directory_path}")
+            return True
+            
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} failed to remove directory, retrying in {retry_delay} seconds...")
+                await asyncio.sleep(retry_delay)
+            else:
+                logger.error(f"Failed to remove directory after {max_retries} attempts: {e}")
+                return False

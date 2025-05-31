@@ -30,7 +30,6 @@ from plugins.database.database import db
 from plugins.database.add import AddUser
 from pyrogram.types import Thumbnail
 from plugins.config import Config
-from plugins.degoo_handler import handle_degoo_url
 cookies_file = Config.COOKIES_FILE
 
 
@@ -81,12 +80,6 @@ async def echo(bot, update):
     file_name = None
 
     print(url)
-    if "degoo.com" in url:
-        logger.info(f"Detected Degoo URL: {url}. Calling Degoo handler.")
-        logger.info(f"Type of update object before calling handle_degoo_url: {type(update)}")
-        await handle_degoo_url(bot, update, url, os.path.join(Config.DOWNLOAD_LOCATION, f"{update.from_user.id}{random_char(5)}"))
-        return
-
     if "|" in url:
         url_parts = url.split("|")
         if len(url_parts) == 2:
@@ -128,9 +121,7 @@ async def echo(bot, update):
         command_to_exec = [
             "yt-dlp",
             "--no-warnings",
-            "--cookies", "cookies.txt",
             "--allow-dynamic-mpd",
-            "--cookies", cookies_file,
             "--no-check-certificate",
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "-j",
@@ -142,14 +133,12 @@ async def echo(bot, update):
             "yt-dlp",
             "--no-warnings",
             "--allow-dynamic-mpd",
-            "--cookies", cookies_file,
             "--no-check-certificate",
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "-j",
             url,
             "--geo-bypass-country",
             "IN"
-
         ]
     if youtube_dl_username is not None:
         command_to_exec.append("--username")
@@ -213,7 +202,7 @@ async def echo(bot, update):
                     format_string = formats.get("format")
                 if "DASH" in format_string.upper():
                     continue
-          
+                
                 format_ext = formats.get("ext")
                 if formats.get('filesize'):
                     size = formats['filesize']
@@ -221,27 +210,23 @@ async def echo(bot, update):
                     size = formats['filesize_approx']
                 else:
                     size = 0
+                
+                # Skip audio-only formats
+                if "audio only" in format_string.lower():
+                    continue
+                    
                 cb_string_video = "{}|{}|{}|{}".format(
                     "video", format_id, format_ext, randem)
                 cb_string_file = "{}|{}|{}|{}".format(
                     "file", format_id, format_ext, randem)
-                if format_string is not None and not "audio only" in format_string:
+                
+                if format_string is not None:
                     ikeyboard = [
                         InlineKeyboardButton(
                             "📁 " + format_string + " " + format_ext + " " + humanbytes(size) + " ",
                             callback_data=(cb_string_video).encode("UTF-8")
                         )
                     ]
-                    """if duration is not None:
-                        cb_string_video_message = "{}|{}|{}|{}|{}".format(
-                            "vm", format_id, format_ext, ran, randem)
-                        ikeyboard.append(
-                            InlineKeyboardButton(
-                                "VM",
-                                callback_data=(
-                                    cb_string_video_message).encode("UTF-8")
-                            )
-                        )"""
                 else:
                     # special weird case :\
                     ikeyboard = [

@@ -57,17 +57,4 @@ class Config(object):
     VERIFICATION = os.environ.get("VERIFICATION", "")
     COOKIES_FILE = os.environ.get("COOKIES_FILE_PATH", "/app/cookies.txt")
 
-    # Degoo Cookies Configuration
-    DEGOO_COOKIES = {
-        "session": "your_session_value_here",
-        "auth_token": "your_auth_token_here"
-    }
-
-    # Cookies file path
-    COOKIES_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cookies.json")
-
-    # Degoo Configuration
-    DEGOO_EMAIL = "your_email@example.com"  # Replace with your Degoo email
-    DEGOO_PASSWORD = "your_password"  # Replace with your Degoo password
-
     
