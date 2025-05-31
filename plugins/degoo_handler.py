@@ -119,8 +119,14 @@ async def login_to_degoo(email, password):
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
-                "Origin": "https://app.degoo.com",
-                "Referer": "https://app.degoo.com/login"
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Upgrade-Insecure-Requests": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                "Cache-Control": "max-age=0"
             }
             
             # Get login page first to get CSRF token
@@ -132,22 +138,32 @@ async def login_to_degoo(email, password):
                 # Extract CSRF token from cookies
                 cookies = response.cookies
                 csrf_token = cookies.get('csrf_token', '')
+                
+                # Get session cookie
+                session_cookie = cookies.get('session', '')
             
             # Now try to login
             login_headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json",
+                "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
                 "Content-Type": "application/json",
                 "Origin": "https://app.degoo.com",
                 "Referer": "https://app.degoo.com/login",
-                "X-CSRF-Token": csrf_token
+                "X-CSRF-Token": csrf_token,
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin",
+                "Cookie": f"session={session_cookie}; csrf_token={csrf_token}"
             }
             
             login_data = {
                 "email": email,
                 "password": password,
-                "remember": True
+                "remember": True,
+                "csrf_token": csrf_token
             }
             
             login_url = "https://app.degoo.com/api/auth/login"
@@ -160,17 +176,26 @@ async def login_to_degoo(email, password):
                     try:
                         login_response = await response.json()
                         if 'token' in login_response:
+                            # Get all cookies from response
+                            response_cookies = response.cookies
+                            auth_token = login_response.get('token', '')
+                            
                             cookies = {
                                 "cookies": [
                                     {
                                         "domain": "app.degoo.com",
                                         "name": "session",
-                                        "value": login_response.get('token', '')
+                                        "value": response_cookies.get('session', session_cookie)
                                     },
                                     {
                                         "domain": "app.degoo.com",
                                         "name": "auth_token",
-                                        "value": login_response.get('token', '')
+                                        "value": auth_token
+                                    },
+                                    {
+                                        "domain": "app.degoo.com",
+                                        "name": "csrf_token",
+                                        "value": response_cookies.get('csrf_token', csrf_token)
                                     }
                                 ]
                             }
@@ -178,7 +203,7 @@ async def login_to_degoo(email, password):
                             with open(Config.COOKIES_FILE, 'w') as f:
                                 json.dump(cookies, f)
                             
-                            return True, login_response.get('token', '')
+                            return True, auth_token
                     except json.JSONDecodeError as e:
                         logger.error(f"Failed to parse login response: {e}")
                         return False, None
@@ -239,12 +264,17 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
             
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "*/*",
+                "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
                 "Origin": "https://app.degoo.com",
                 "Referer": youtube_dl_url,
                 "X-Requested-With": "XMLHttpRequest",
-                "Authorization": f"Bearer {auth_token}"
+                "Authorization": f"Bearer {auth_token}",
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin"
             }
             
             share_url = f"https://app.degoo.com/api/share/{share_id}"
