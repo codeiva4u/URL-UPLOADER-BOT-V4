@@ -143,17 +143,18 @@ async def login_to_degoo(email, password):
 
 async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_user):
     try:
-        await update.message.edit_caption(caption="Please send your Degoo email and password in this format:\n\nemail:password")
+        # Send a new message to the user for credentials
+        status_message = await update.reply_text(text="Please send your Degoo email and password in this format:\n\nemail:password")
         
         try:
             response = await bot.wait_for_message(
-                chat_id=update.message.chat.id,
+                chat_id=update.chat.id,
                 user_id=update.from_user.id,
                 timeout=300
             )
             
             if not response or not response.text:
-                await update.message.edit_caption(caption="No credentials provided. Process cancelled.")
+                await status_message.edit_text(text="No credentials provided. Process cancelled.")
                 return
             
             try:
@@ -161,14 +162,14 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
                 email = email.strip()
                 password = password.strip()
             except ValueError:
-                await update.message.edit_caption(caption="Invalid format. Please use format: email:password")
+                await status_message.edit_text(text="Invalid format. Please use format: email:password")
                 return
             
-            await update.message.edit_caption(caption="Logging in to Degoo...")
+            await status_message.edit_text(text="Logging in to Degoo...")
             
             login_success, auth_token = await login_to_degoo(email, password)
             if not login_success:
-                await update.message.edit_caption(caption="Login failed. Please check your credentials.")
+                await status_message.edit_text(text="Login failed. Please check your credentials.")
                 return
             
             share_id = youtube_dl_url.split('/')[-1]
@@ -196,30 +197,30 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
                                     file_name = file.get('name', 'file')
                                     file_path = os.path.join(tmp_directory_for_each_user, file_name)
                                     
-                                    await update.message.edit_caption(caption=f"Downloading {file_name}...")
+                                    await status_message.edit_text(text=f"Downloading {file_name}...")
                                     
                                     download_url = f"https://app.degoo.com/api/share/{share_id}/file/{file_id}/download"
                                     
                                     if await download_degoo_file(download_url, file_path, headers):
-                                        await update.message.edit_caption(caption=f"Uploading {file_name}...")
+                                        await status_message.edit_text(text=f"Uploading {file_name}...")
                                         
                                         if os.path.exists(file_path):
-                                            await update.message.reply_document(
+                                            await update.reply_document(
                                                 document=file_path,
                                                 caption=f"Downloaded from Degoo: {file_name}"
                                             )
                                     else:
-                                        await update.message.edit_caption(caption=f"Failed to download {file_name}")
+                                        await status_message.edit_text(text=f"Failed to download {file_name}")
             
-            await update.message.edit_caption(caption="All files processed!")
+            await status_message.edit_text(text="All files processed!")
             
         except Exception as e:
             logger.error(f"Error waiting for credentials: {e}")
-            await update.message.edit_caption(caption="Process timed out. Please try again.")
+            await status_message.edit_text(text="Process timed out. Please try again.")
             return
     except Exception as e:
         logger.error(f"An error occurred in handle_degoo_url: {e}", exc_info=True)
         try:
-            await update.message.edit_caption(caption=f"An unexpected error occurred during Degoo processing. Please check logs or try again.")
+            await status_message.edit_text(text=f"An unexpected error occurred during Degoo processing. Please check logs or try again.")
         except Exception as e_edit:
-            logger.error(f"Failed to edit caption on error in handle_degoo_url: {e_edit}") 
+            logger.error(f"Failed to edit text on error in handle_degoo_url: {e_edit}") 

@@ -83,6 +83,7 @@ async def echo(bot, update):
     print(url)
     if "degoo.com" in url:
         logger.info(f"Detected Degoo URL: {url}. Calling Degoo handler.")
+        logger.info(f"Type of update object before calling handle_degoo_url: {type(update)}")
         await handle_degoo_url(bot, update, url, os.path.join(Config.DOWNLOAD_LOCATION, f"{update.from_user.id}{random_char(5)}"))
         return
 
