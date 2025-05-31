@@ -114,46 +114,77 @@ async def login_to_degoo(email, password):
         connector = aiohttp.TCPConnector(ssl=ssl_context)
         
         async with aiohttp.ClientSession(connector=connector) as session:
+            # First get CSRF token
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "*/*",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
-                "Content-Type": "application/json",
                 "Origin": "https://app.degoo.com",
                 "Referer": "https://app.degoo.com/login"
             }
             
+            # Get login page first to get CSRF token
+            async with session.get("https://app.degoo.com/login", headers=headers) as response:
+                if response.status != 200:
+                    logger.error(f"Failed to get login page: {response.status}")
+                    return False, None
+                
+                # Extract CSRF token from cookies
+                cookies = response.cookies
+                csrf_token = cookies.get('csrf_token', '')
+            
+            # Now try to login
+            login_headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Content-Type": "application/json",
+                "Origin": "https://app.degoo.com",
+                "Referer": "https://app.degoo.com/login",
+                "X-CSRF-Token": csrf_token
+            }
+            
             login_data = {
                 "email": email,
-                "password": password
+                "password": password,
+                "remember": True
             }
             
             login_url = "https://app.degoo.com/api/auth/login"
             
-            async with session.post(login_url, json=login_data, headers=headers) as response:
+            async with session.post(login_url, json=login_data, headers=login_headers) as response:
+                response_text = await response.text()
+                logger.info(f"Login response: {response_text}")
+                
                 if response.status == 200:
-                    login_response = await response.json()
-                    if 'token' in login_response:
-                        cookies = {
-                            "cookies": [
-                                {
-                                    "domain": "app.degoo.com",
-                                    "name": "session",
-                                    "value": login_response.get('token', '')
-                                },
-                                {
-                                    "domain": "app.degoo.com",
-                                    "name": "auth_token",
-                                    "value": login_response.get('token', '')
-                                }
-                            ]
-                        }
-                        
-                        with open(Config.COOKIES_FILE, 'w') as f:
-                            json.dump(cookies, f)
-                        
-                        return True, login_response.get('token', '')
-                return False, None
+                    try:
+                        login_response = await response.json()
+                        if 'token' in login_response:
+                            cookies = {
+                                "cookies": [
+                                    {
+                                        "domain": "app.degoo.com",
+                                        "name": "session",
+                                        "value": login_response.get('token', '')
+                                    },
+                                    {
+                                        "domain": "app.degoo.com",
+                                        "name": "auth_token",
+                                        "value": login_response.get('token', '')
+                                    }
+                                ]
+                            }
+                            
+                            with open(Config.COOKIES_FILE, 'w') as f:
+                                json.dump(cookies, f)
+                            
+                            return True, login_response.get('token', '')
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to parse login response: {e}")
+                        return False, None
+                else:
+                    logger.error(f"Login failed with status {response.status}: {response_text}")
+                    return False, None
     except Exception as e:
         logger.error(f"Error logging in to Degoo: {e}")
         return False, None
@@ -199,17 +230,9 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
             
             await status_message.edit_text(text="Logging in to Degoo...")
             
-            # Configure SSL context
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            
-            # Create aiohttp session with SSL context
-            connector = aiohttp.TCPConnector(ssl=ssl_context)
-            
             login_success, auth_token = await login_to_degoo(email, password)
             if not login_success:
-                await status_message.edit_text(text="Login failed. Please check your credentials.")
+                await status_message.edit_text(text="Login failed. Please check your credentials and try again.")
                 return
             
             share_id = youtube_dl_url.split('/')[-1]
