@@ -13,13 +13,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
-
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --upgrade yt-dlp
 
+# Create downloads directory and set permissions
+RUN mkdir -p /app/DOWNLOADS && chmod 777 /app/DOWNLOADS
+
 # Copy cookies.txt specifically and set environment variable
 COPY cookies.txt /app/cookies.txt
+RUN chmod 644 /app/cookies.txt
 ENV COOKIES_FILE_PATH=/app/cookies.txt
 
 # Copy the rest of the application code into the container at /app
