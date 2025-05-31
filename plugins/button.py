@@ -128,6 +128,8 @@ async def youtube_dl_call_back(bot, update):
             "--hls-prefer-ffmpeg",
             "--no-check-certificate",
             "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "--merge-output-format", "mp4",
+            "--postprocessor-args", "-c:v libx264 -crf 18 -preset slow -c:a aac -b:a 192k",
         ]
         if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
             command_to_exec.extend(["--cookies", cookies_file])
