@@ -28,7 +28,7 @@ from pyrogram.errors import UserNotParticipant
 from plugins.functions.ran_text import random_char
 from plugins.database.database import db
 from plugins.database.add import AddUser
-from plugins.types import Thumbnail
+from pyrogram.types import Thumbnail
 from plugins.config import Config
 from plugins.degoo_handler import handle_degoo_url
 cookies_file = Config.COOKIES_FILE
