@@ -17,12 +17,47 @@ from plugins.database.database import db
 from PIL import Image
 from plugins.functions.ran_text import random_char
 from plugins.config import Config
+import aiohttp
+import re
+import random
+import string
+
 cookies_file = Config.COOKIES_FILE
 # Set up logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
+
+async def generate_degoo_cookies():
+    try:
+        # Generate random session ID
+        session_id = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        auth_token = ''.join(random.choices(string.ascii_letters + string.digits, k=64))
+        
+        cookies = {
+            "cookies": [
+                {
+                    "domain": "app.degoo.com",
+                    "name": "session",
+                    "value": session_id
+                },
+                {
+                    "domain": "app.degoo.com",
+                    "name": "auth_token",
+                    "value": auth_token
+                }
+            ]
+        }
+        
+        # Save cookies to file
+        with open(Config.COOKIES_FILE, 'w') as f:
+            json.dump(cookies, f)
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error generating Degoo cookies: {e}")
+        return False
 
 async def youtube_dl_call_back(bot, update):
     cb_data = update.data
@@ -46,6 +81,18 @@ async def youtube_dl_call_back(bot, update):
             return
 
         youtube_dl_url = update.message.reply_to_message.text
+        
+        # Check if URL is Degoo
+        if "degoo.com" in youtube_dl_url:
+            # Generate cookies if not exists
+            if not os.path.exists(Config.COOKIES_FILE):
+                await update.message.edit_caption(caption="Generating Degoo cookies...")
+                if await generate_degoo_cookies():
+                    await update.message.edit_caption(caption="Degoo cookies generated successfully!")
+                else:
+                    await update.message.edit_caption(caption="Failed to generate Degoo cookies!")
+                    return
+
         video_title = response_json.get('title', 'Untitled Video')
         if not video_title:
             video_title = 'Untitled Video'
@@ -126,34 +173,70 @@ async def youtube_dl_call_back(bot, update):
             "--embed-subs",
             "-f", f"bestvideo[height<={youtube_dl_format}]+bestaudio/best[height<={youtube_dl_format}]",
             "--hls-prefer-ffmpeg",
-            "--merge-output-format", "mp4"
+            "--merge-output-format", "mp4",
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "--referer", "https://app.degoo.com/",
+            "--add-header", "Accept: */*",
+            "--add-header", "Accept-Language: en-US,en;q=0.9",
+            "--add-header", "Origin: https://app.degoo.com",
+            "--add-header", "Sec-Fetch-Dest: empty",
+            "--add-header", "Sec-Fetch-Mode: cors",
+            "--add-header", "Sec-Fetch-Site: same-origin",
+            "--extractor-args", "degoo:headers={'Accept': '*/*', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'https://app.degoo.com', 'Referer': 'https://app.degoo.com/'}",
+            "--downloader-args", "http:headers={'Accept': '*/*', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'https://app.degoo.com', 'Referer': 'https://app.degoo.com/'}",
+            "--retries", "10",
+            "--fragment-retries", "10",
+            "--file-access-retries", "10",
+            "--extractor-retries", "10",
+            "--retry-sleep", "5",
+            "--yes-playlist",
+            "--extract-audio",
+            "--audio-format", "mp3",
+            "--audio-quality", "0",
+            "--embed-metadata",
+            "--add-metadata",
+            "--playlist-reverse",
+            "--no-playlist-reverse",
+            "--playlist-items", "all",
+            "--extractor-args", "degoo:playlist=True",
+            "--extractor-args", "degoo:playlist_items=all",
+            "--extractor-args", "degoo:playlist_reverse=False",
+            "--extractor-args", "degoo:playlist_start=1",
+            "--extractor-args", "degoo:playlist_end=0",
+            "--extractor-args", "degoo:playlist_min_items=1",
+            "--extractor-args", "degoo:playlist_max_items=0"
         ]
+        # Add cookies if available
         if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
             command_to_exec.extend(["--cookies", cookies_file])
-        command_to_exec.extend([
-            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            youtube_dl_url,
-            "-o", download_directory
-        ])
-        
-        if tg_send_type == "audio":
-            command_to_exec = [
-                "yt-dlp",
-                "-c",
-                "--no-part",
-                "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
-                "--bidi-workaround",
-                "--extract-audio",
-            ]
-            if os.path.exists(cookies_file) and os.path.isfile(cookies_file):
+        else:
+            # Create default Degoo cookies if not exists
+            default_cookies = {
+                "cookies": [
+                    {
+                        "domain": "app.degoo.com",
+                        "name": "session",
+                        "value": "your_session_value_here"
+                    },
+                    {
+                        "domain": "app.degoo.com",
+                        "name": "auth_token",
+                        "value": "your_auth_token_here"
+                    }
+                ]
+            }
+            try:
+                with open(cookies_file, 'w') as f:
+                    json.dump(default_cookies, f)
                 command_to_exec.extend(["--cookies", cookies_file])
-            command_to_exec.extend([
-                "--audio-format", youtube_dl_ext,
-                "--audio-quality", youtube_dl_format,
-                "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-                youtube_dl_url,
-                "-o", download_directory
-            ])
+                logger.info("Created default Degoo cookies file")
+            except Exception as e:
+                logger.error(f"Error creating cookies file: {e}")
+        
+        command_to_exec.extend([
+            youtube_dl_url,
+            "-o", os.path.join(tmp_directory_for_each_user, "%(playlist_index)s-%(title)s.%(ext)s")
+        ])
         
         if Config.HTTP_PROXY:
             command_to_exec.extend(["--proxy", Config.HTTP_PROXY])
