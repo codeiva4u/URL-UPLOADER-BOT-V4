@@ -121,17 +121,6 @@ async def youtube_dl_call_back(bot, update):
     thumb_to_remove_path = None
 
     try:
-        try:
-            with open(save_ytdl_json_path, "r", encoding="utf8") as f:
-                response_json = json.load(f)
-        except FileNotFoundError as e:
-            logger.error(f"JSON file [{save_ytdl_json_path}] not found: {e}")
-            try:
-                await update.message.delete()
-            except Exception as del_err:
-                logger.error(f"Error deleting message after JSON not found: {del_err}")
-            return
-
         youtube_dl_url = update.message.reply_to_message.text
         
         # Check if URL is Degoo
@@ -184,6 +173,18 @@ async def youtube_dl_call_back(bot, update):
                         await update.message.edit_caption(caption=f"Failed to download {file_name}")
             
             await update.message.edit_caption(caption="All files processed!")
+            return
+
+        # For non-Degoo URLs, use yt-dlp
+        try:
+            with open(save_ytdl_json_path, "r", encoding="utf8") as f:
+                response_json = json.load(f)
+        except FileNotFoundError as e:
+            logger.error(f"JSON file [{save_ytdl_json_path}] not found: {e}")
+            try:
+                await update.message.delete()
+            except Exception as del_err:
+                logger.error(f"Error deleting message after JSON not found: {del_err}")
             return
 
         video_title = response_json.get('title', 'Untitled Video')
