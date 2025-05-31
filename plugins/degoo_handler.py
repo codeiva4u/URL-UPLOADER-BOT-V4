@@ -14,6 +14,7 @@ import re
 import random
 import string
 import base64
+import ssl
 
 cookies_file = Config.COOKIES_FILE
 logger = logging.getLogger(__name__)
@@ -79,7 +80,15 @@ async def extract_degoo_url(url):
 
 async def download_degoo_file(url, output_path, headers):
     try:
-        async with aiohttp.ClientSession() as session:
+        # Configure SSL context
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # Create aiohttp session with SSL context
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     with open(output_path, 'wb') as f:
@@ -96,7 +105,15 @@ async def download_degoo_file(url, output_path, headers):
 
 async def login_to_degoo(email, password):
     try:
-        async with aiohttp.ClientSession() as session:
+        # Configure SSL context
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # Create aiohttp session with SSL context
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "*/*",
@@ -143,34 +160,52 @@ async def login_to_degoo(email, password):
 
 async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_user):
     try:
-        # Send a new message to the user for credentials
-        status_message = await update.reply_text(text="Please send your Degoo email and password in this format:\n\nemail:password")
+        # First ask for email
+        status_message = await update.reply_text(text="Please send your Degoo email address:")
         
         try:
             # Create a filter for the specific chat and user
             def message_filter(client, message):
                 return message.chat.id == update.chat.id and message.from_user.id == update.from_user.id
 
-            # Wait for the message with the filter
-            response = await bot.wait_for_message(
+            # Wait for email
+            email_response = await bot.wait_for_message(
                 chat_id=update.chat.id,
                 filters=message_filter,
                 timeout=300
             )
             
-            if not response or not response.text:
-                await status_message.edit_text(text="No credentials provided. Process cancelled.")
+            if not email_response or not email_response.text:
+                await status_message.edit_text(text="No email provided. Process cancelled.")
                 return
             
-            try:
-                email, password = response.text.strip().split(':')
-                email = email.strip()
-                password = password.strip()
-            except ValueError:
-                await status_message.edit_text(text="Invalid format. Please use format: email:password")
+            email = email_response.text.strip()
+            
+            # Now ask for password
+            await status_message.edit_text(text="Please send your Degoo password:")
+            
+            # Wait for password
+            password_response = await bot.wait_for_message(
+                chat_id=update.chat.id,
+                filters=message_filter,
+                timeout=300
+            )
+            
+            if not password_response or not password_response.text:
+                await status_message.edit_text(text="No password provided. Process cancelled.")
                 return
+            
+            password = password_response.text.strip()
             
             await status_message.edit_text(text="Logging in to Degoo...")
+            
+            # Configure SSL context
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            # Create aiohttp session with SSL context
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
             
             login_success, auth_token = await login_to_degoo(email, password)
             if not login_success:
@@ -190,7 +225,7 @@ async def handle_degoo_url(bot, update, youtube_dl_url, tmp_directory_for_each_u
             }
             
             share_url = f"https://app.degoo.com/api/share/{share_id}"
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.get(share_url, headers=headers) as response:
                     if response.status == 200:
                         share_data = await response.json()
