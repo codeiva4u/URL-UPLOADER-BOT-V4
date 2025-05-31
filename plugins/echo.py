@@ -28,8 +28,9 @@ from pyrogram.errors import UserNotParticipant
 from plugins.functions.ran_text import random_char
 from plugins.database.database import db
 from plugins.database.add import AddUser
-from pyrogram.types import Thumbnail
+from plugins.types import Thumbnail
 from plugins.config import Config
+from plugins.degoo_handler import handle_degoo_url
 cookies_file = Config.COOKIES_FILE
 
 
@@ -80,6 +81,11 @@ async def echo(bot, update):
     file_name = None
 
     print(url)
+    if "degoo.com" in url:
+        logger.info(f"Detected Degoo URL: {url}. Calling Degoo handler.")
+        await handle_degoo_url(bot, update, url, os.path.join(Config.DOWNLOAD_LOCATION, f"{update.from_user.id}{random_char(5)}"))
+        return
+
     if "|" in url:
         url_parts = url.split("|")
         if len(url_parts) == 2:
