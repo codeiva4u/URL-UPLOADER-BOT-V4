@@ -233,13 +233,32 @@ async def echo(bot, update):
                     
                     if "audio only" in format_string.lower():
                         continue
+
+                    # Add quality indicator
+                    quality = ""
+                    if "2160" in format_string or "4k" in format_string.lower():
+                        quality = "4K"
+                    elif "1440" in format_string:
+                        quality = "2K"
+                    elif "1080" in format_string:
+                        quality = "1080p"
+                    elif "720" in format_string:
+                        quality = "720p"
+                    elif "480" in format_string:
+                        quality = "480p"
+                    elif "360" in format_string:
+                        quality = "360p"
+                    elif "240" in format_string:
+                        quality = "240p"
+                    elif "144" in format_string:
+                        quality = "144p"
                         
                     cb_string_video = "{}|{}|{}|{}".format(
                         "video", format_id, format_ext, randem)
                     
                     inline_keyboard.append([
                         InlineKeyboardButton(
-                            "🎥 " + format_string + " " + format_ext + " " + humanbytes(size) + " ",
+                            f"🎥 {quality} {format_ext.upper()} {humanbytes(size)}",
                             callback_data=cb_string_video.encode("UTF-8")
                         )
                     ])
