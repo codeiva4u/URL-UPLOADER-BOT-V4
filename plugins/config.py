@@ -66,4 +66,8 @@ class Config(object):
     # Cookies file path
     COOKIES_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cookies.json")
 
+    # Degoo Configuration
+    DEGOO_EMAIL = "your_email@example.com"  # Replace with your Degoo email
+    DEGOO_PASSWORD = "your_password"  # Replace with your Degoo password
+
     

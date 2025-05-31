@@ -111,6 +111,56 @@ async def download_degoo_file(url, output_path, headers):
         logger.error(f"Error downloading file: {e}")
         return False
 
+async def login_to_degoo():
+    try:
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Content-Type": "application/json",
+                "Origin": "https://app.degoo.com",
+                "Referer": "https://app.degoo.com/login"
+            }
+            
+            # Login data
+            login_data = {
+                "email": Config.DEGOO_EMAIL,
+                "password": Config.DEGOO_PASSWORD
+            }
+            
+            # Login URL
+            login_url = "https://app.degoo.com/api/auth/login"
+            
+            async with session.post(login_url, json=login_data, headers=headers) as response:
+                if response.status == 200:
+                    login_response = await response.json()
+                    if 'token' in login_response:
+                        # Save cookies
+                        cookies = {
+                            "cookies": [
+                                {
+                                    "domain": "app.degoo.com",
+                                    "name": "session",
+                                    "value": login_response.get('token', '')
+                                },
+                                {
+                                    "domain": "app.degoo.com",
+                                    "name": "auth_token",
+                                    "value": login_response.get('token', '')
+                                }
+                            ]
+                        }
+                        
+                        with open(Config.COOKIES_FILE, 'w') as f:
+                            json.dump(cookies, f)
+                        
+                        return True
+                return False
+    except Exception as e:
+        logger.error(f"Error logging in to Degoo: {e}")
+        return False
+
 async def youtube_dl_call_back(bot, update):
     cb_data = update.data
     tg_send_type, youtube_dl_format, youtube_dl_ext, ranom = cb_data.split("|")
@@ -125,55 +175,140 @@ async def youtube_dl_call_back(bot, update):
         
         # Check if URL is Degoo
         if "degoo.com" in youtube_dl_url:
-            await update.message.edit_caption(caption="Processing Degoo URL...")
+            await update.message.edit_caption(caption="Please send your Degoo email and password in this format:\n\nemail:password")
             
-            # Extract files from Degoo URL
-            files = await extract_degoo_url(youtube_dl_url)
-            if not files:
-                await update.message.edit_caption(caption="Failed to extract files from Degoo URL!")
+            # Wait for user's response
+            try:
+                response = await bot.wait_for_message(
+                    chat_id=update.message.chat.id,
+                    user_id=update.from_user.id,
+                    timeout=300  # 5 minutes timeout
+                )
+                
+                if not response or not response.text:
+                    await update.message.edit_caption(caption="No credentials provided. Process cancelled.")
+                    return
+                
+                # Parse credentials
+                try:
+                    email, password = response.text.strip().split(':')
+                    email = email.strip()
+                    password = password.strip()
+                except ValueError:
+                    await update.message.edit_caption(caption="Invalid format. Please use format: email:password")
+                    return
+                
+                await update.message.edit_caption(caption="Logging in to Degoo...")
+                
+                # Try to login with provided credentials
+                async with aiohttp.ClientSession() as session:
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Accept": "*/*",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Content-Type": "application/json",
+                        "Origin": "https://app.degoo.com",
+                        "Referer": "https://app.degoo.com/login"
+                    }
+                    
+                    login_data = {
+                        "email": email,
+                        "password": password
+                    }
+                    
+                    login_url = "https://app.degoo.com/api/auth/login"
+                    
+                    async with session.post(login_url, json=login_data, headers=headers) as response:
+                        if response.status == 200:
+                            login_response = await response.json()
+                            if 'token' in login_response:
+                                # Save cookies
+                                cookies = {
+                                    "cookies": [
+                                        {
+                                            "domain": "app.degoo.com",
+                                            "name": "session",
+                                            "value": login_response.get('token', '')
+                                        },
+                                        {
+                                            "domain": "app.degoo.com",
+                                            "name": "auth_token",
+                                            "value": login_response.get('token', '')
+                                        }
+                                    ]
+                                }
+                                
+                                with open(Config.COOKIES_FILE, 'w') as f:
+                                    json.dump(cookies, f)
+                                
+                                await update.message.edit_caption(caption="Successfully logged in to Degoo!")
+                            else:
+                                await update.message.edit_caption(caption="Login failed. Invalid credentials.")
+                                return
+                        else:
+                            await update.message.edit_caption(caption="Login failed. Please check your credentials.")
+                            return
+                
+                # Extract share ID from URL
+                share_id = youtube_dl_url.split('/')[-1]
+                
+                # Download each file
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Origin": "https://app.degoo.com",
+                    "Referer": youtube_dl_url,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+                
+                # Get share info
+                share_url = f"https://app.degoo.com/api/share/{share_id}"
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(share_url, headers=headers) as response:
+                        if response.status == 200:
+                            share_data = await response.json()
+                            if 'files' in share_data:
+                                files = share_data['files']
+                                for file in files:
+                                    file_id = file.get('id')
+                                    if file_id:
+                                        file_name = file.get('name', 'file')
+                                        file_path = os.path.join(tmp_directory_for_each_user, file_name)
+                                        
+                                        await update.message.edit_caption(caption=f"Downloading {file_name}...")
+                                        
+                                        # Get download URL
+                                        download_url = f"https://app.degoo.com/api/share/{share_id}/file/{file_id}/download"
+                                        
+                                        # Download file
+                                        async with session.get(download_url, headers=headers) as download_response:
+                                            if download_response.status == 200:
+                                                with open(file_path, 'wb') as f:
+                                                    while True:
+                                                        chunk = await download_response.content.read(8192)
+                                                        if not chunk:
+                                                            break
+                                                        f.write(chunk)
+                                                
+                                                await update.message.edit_caption(caption=f"Uploading {file_name}...")
+                                                
+                                                # Upload the file
+                                                if os.path.exists(file_path):
+                                                    await update.message.reply_document(
+                                                        document=file_path,
+                                                        caption=f"Downloaded from Degoo: {file_name}"
+                                                    )
+                                            else:
+                                                await update.message.edit_caption(caption=f"Failed to download {file_name}")
+                
+                await update.message.edit_caption(caption="All files processed!")
                 return
                 
-            # Generate cookies if not exists
-            if not os.path.exists(Config.COOKIES_FILE):
-                await update.message.edit_caption(caption="Generating Degoo cookies...")
-                if await generate_degoo_cookies():
-                    await update.message.edit_caption(caption="Degoo cookies generated successfully!")
-                else:
-                    await update.message.edit_caption(caption="Failed to generate Degoo cookies!")
-                    return
-            
-            # Download each file
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Origin": "https://app.degoo.com",
-                "Referer": youtube_dl_url,
-                "X-Requested-With": "XMLHttpRequest"
-            }
-            
-            for file in files:
-                file_url = file.get('download_url')
-                if file_url:
-                    file_name = file.get('name', 'file')
-                    file_path = os.path.join(tmp_directory_for_each_user, file_name)
-                    
-                    await update.message.edit_caption(caption=f"Downloading {file_name}...")
-                    
-                    if await download_degoo_file(file_url, file_path, headers):
-                        await update.message.edit_caption(caption=f"Uploading {file_name}...")
-                        
-                        # Upload the file
-                        if os.path.exists(file_path):
-                            await update.message.reply_document(
-                                document=file_path,
-                                caption=f"Downloaded from Degoo: {file_name}"
-                            )
-                    else:
-                        await update.message.edit_caption(caption=f"Failed to download {file_name}")
-            
-            await update.message.edit_caption(caption="All files processed!")
-            return
+            except Exception as e:
+                logger.error(f"Error waiting for credentials: {e}")
+                await update.message.edit_caption(caption="Process timed out. Please try again.")
+                return
 
         # For non-Degoo URLs, use yt-dlp
         try:
