@@ -259,7 +259,8 @@ async def youtube_dl_call_back(bot, update):
                     "Accept-Language": "en-US,en;q=0.9",
                     "Origin": "https://app.degoo.com",
                     "Referer": youtube_dl_url,
-                    "X-Requested-With": "XMLHttpRequest"
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Authorization": f"Bearer {login_response.get('token', '')}"
                 }
                 
                 # Get share info
