@@ -68,23 +68,48 @@ async def extract_degoo_url(url):
                 "Accept": "*/*",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Origin": "https://app.degoo.com",
-                "Referer": "https://app.degoo.com/"
+                "Referer": "https://app.degoo.com/",
+                "X-Requested-With": "XMLHttpRequest"
             }
             
             # Extract share ID from URL
             share_id = url.split('/')[-1]
             
-            # Get share info
+            # First get the share info
             share_url = f"https://app.degoo.com/api/share/{share_id}"
             async with session.get(share_url, headers=headers) as response:
                 if response.status == 200:
                     share_data = await response.json()
                     if 'files' in share_data:
-                        return share_data['files']
+                        files = share_data['files']
+                        # Get download URLs for each file
+                        for file in files:
+                            file_id = file.get('id')
+                            if file_id:
+                                download_url = f"https://app.degoo.com/api/share/{share_id}/file/{file_id}/download"
+                                file['download_url'] = download_url
+                        return files
                 return None
     except Exception as e:
         logger.error(f"Error extracting Degoo URL: {e}")
         return None
+
+async def download_degoo_file(url, output_path, headers):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    with open(output_path, 'wb') as f:
+                        while True:
+                            chunk = await response.content.read(8192)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                    return True
+                return False
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
+        return False
 
 async def youtube_dl_call_back(bot, update):
     cb_data = update.data
@@ -129,42 +154,36 @@ async def youtube_dl_call_back(bot, update):
                     return
             
             # Download each file
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Origin": "https://app.degoo.com",
+                "Referer": youtube_dl_url,
+                "X-Requested-With": "XMLHttpRequest"
+            }
+            
             for file in files:
                 file_url = file.get('download_url')
                 if file_url:
-                    command_to_exec = [
-                        "curl",
-                        "-L",
-                        "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                        "-H", "Accept: */*",
-                        "-H", "Accept-Language: en-US,en;q=0.9",
-                        "-H", f"Origin: https://app.degoo.com",
-                        "-H", f"Referer: {youtube_dl_url}",
-                        "-o", os.path.join(tmp_directory_for_each_user, file.get('name', 'file')),
-                        file_url
-                    ]
+                    file_name = file.get('name', 'file')
+                    file_path = os.path.join(tmp_directory_for_each_user, file_name)
                     
-                    process = await asyncio.create_subprocess_exec(
-                        *command_to_exec,
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.PIPE,
-                    )
+                    await update.message.edit_caption(caption=f"Downloading {file_name}...")
                     
-                    stdout, stderr = await process.communicate()
-                    
-                    if process.returncode != 0:
-                        logger.error(f"Error downloading file: {stderr.decode()}")
-                        continue
-                    
-                    # Upload the file
-                    file_path = os.path.join(tmp_directory_for_each_user, file.get('name', 'file'))
-                    if os.path.exists(file_path):
-                        await update.message.reply_document(
-                            document=file_path,
-                            caption=f"Downloaded from Degoo: {file.get('name', 'file')}"
-                        )
+                    if await download_degoo_file(file_url, file_path, headers):
+                        await update.message.edit_caption(caption=f"Uploading {file_name}...")
+                        
+                        # Upload the file
+                        if os.path.exists(file_path):
+                            await update.message.reply_document(
+                                document=file_path,
+                                caption=f"Downloaded from Degoo: {file_name}"
+                            )
+                    else:
+                        await update.message.edit_caption(caption=f"Failed to download {file_name}")
             
-            await update.message.edit_caption(caption="All files downloaded successfully!")
+            await update.message.edit_caption(caption="All files processed!")
             return
 
         video_title = response_json.get('title', 'Untitled Video')
