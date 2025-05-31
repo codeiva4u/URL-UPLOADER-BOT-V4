@@ -236,24 +236,16 @@ async def echo(bot, update):
                         
                     cb_string_video = "{}|{}|{}|{}".format(
                         "video", format_id, format_ext, randem)
-                    cb_string_file = "{}|{}|{}|{}".format(
-                        "file", format_id, format_ext, randem)
                     
                     inline_keyboard.append([
                         InlineKeyboardButton(
                             "🎥 " + format_string + " " + format_ext + " " + humanbytes(size) + " ",
                             callback_data=cb_string_video.encode("UTF-8")
-                        ),
-                        InlineKeyboardButton(
-                            "📁 " + format_string + " " + format_ext + " " + humanbytes(size) + " ",
-                            callback_data=cb_string_file.encode("UTF-8")
                         )
                     ])
             else:
                 format_id = response_json["format_id"]
                 format_ext = response_json["ext"]
-                cb_string_file = "{}|{}|{}|{}".format(
-                    "file", format_id, format_ext, randem)
                 cb_string_video = "{}|{}|{}|{}".format(
                     "video", format_id, format_ext, randem)
                 inline_keyboard.append([
