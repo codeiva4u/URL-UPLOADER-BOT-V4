@@ -56,44 +56,38 @@ async def youtube_dl_call_back(bot, update):
         youtube_dl_username = None
         youtube_dl_password = None
     
-        if "|" in youtube_dl_url:
-            url_parts = youtube_dl_url.split("|")
-            if len(url_parts) == 2:
-                youtube_dl_url, custom_file_name_from_url = url_parts
-                if custom_file_name_from_url.strip():
-                    custom_file_name = "".join(c if c.isalnum() or c in ('.', '_', '-') else '_' for c in custom_file_name_from_url.strip())
-            elif len(url_parts) == 4:
-                youtube_dl_url, custom_file_name_from_url, youtube_dl_username, youtube_dl_password = url_parts
-                if custom_file_name_from_url.strip():
-                    custom_file_name = "".join(c if c.isalnum() or c in ('.', '_', '-') else '_' for c in custom_file_name_from_url.strip())
-                if youtube_dl_username:
-                    youtube_dl_username = youtube_dl_username.strip()
-                if youtube_dl_password:
-                    youtube_dl_password = youtube_dl_password.strip()
-            else:
-                for entity in update.message.reply_to_message.entities:
-                    if entity.type == enums.MessageEntityType.TEXT_LINK:
-                        youtube_dl_url = entity.url
-                        break
-                    elif entity.type == enums.MessageEntityType.URL:
-                        o = entity.offset
-                        l = entity.length
-                        youtube_dl_url = update.message.reply_to_message.text[o:o + l]
-                        break
-            youtube_dl_url = youtube_dl_url.strip() if youtube_dl_url else ""
-        else:
-            if update.message.reply_to_message.entities:
-                for entity in update.message.reply_to_message.entities:
-                    if entity.type == enums.MessageEntityType.TEXT_LINK:
-                        youtube_dl_url = entity.url
-                        break
-                    elif entity.type == enums.MessageEntityType.URL:
-                        o = entity.offset
-                        l = entity.length
-                        youtube_dl_url = update.message.reply_to_message.text[o:o + l]
-                        break
-            if not youtube_dl_url:
-                 youtube_dl_url = update.message.reply_to_message.text.strip()
+        # Extract URL from message entities first
+        extracted_url = None
+        if update.message.reply_to_message.entities:
+            for entity in update.message.reply_to_message.entities:
+                if entity.type == enums.MessageEntityType.TEXT_LINK:
+                    extracted_url = entity.url
+                    break
+                elif entity.type == enums.MessageEntityType.URL:
+                    o = entity.offset
+                    l = entity.length
+                    extracted_url = update.message.reply_to_message.text[o:o + l]
+                    break
+
+        # If URL not found in entities, use the message text directly
+        if not extracted_url:
+            extracted_url = update.message.reply_to_message.text.strip()
+
+        # Handle custom file name, username, and password if present in the URL string
+        youtube_dl_url_parts = extracted_url.split("|")
+        youtube_dl_url = youtube_dl_url_parts[0].strip()
+
+        if len(youtube_dl_url_parts) > 1:
+            if len(youtube_dl_url_parts) == 2:
+                custom_file_name_from_url = youtube_dl_url_parts[1].strip()
+                if custom_file_name_from_url:
+                    custom_file_name = "".join(c if c.isalnum() or c in ('.', '_', '-') else '_' for c in custom_file_name_from_url)
+            elif len(youtube_dl_url_parts) == 4:
+                custom_file_name_from_url = youtube_dl_url_parts[1].strip()
+                youtube_dl_username = youtube_dl_url_parts[2].strip()
+                youtube_dl_password = youtube_dl_url_parts[3].strip()
+                if custom_file_name_from_url:
+                    custom_file_name = "".join(c if c.isalnum() or c in ('.', '_', '-') else '_' for c in custom_file_name_from_url)
 
         if not youtube_dl_url:
             logger.error("Could not extract URL from message.")
