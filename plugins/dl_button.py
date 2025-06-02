@@ -36,27 +36,31 @@ async def ddl_call_back(bot, update):
     custom_file_name = None
 
     # Extract URL from message entities first
+    extracted_url = None
     if update.message.reply_to_message.entities:
         for entity in update.message.reply_to_message.entities:
             if entity.type == enums.MessageEntityType.TEXT_LINK:
-                youtube_dl_url = entity.url
+                extracted_url = entity.url
                 break
             elif entity.type == enums.MessageEntityType.URL:
                 o = entity.offset
                 l = entity.length
-                youtube_dl_url = update.message.reply_to_message.text[o:o + l]
+                extracted_url = update.message.reply_to_message.text[o:o + l]
                 break
 
     # If URL not found in entities, use the message text directly
-    if not youtube_dl_url:
-        youtube_dl_url = update.message.reply_to_message.text.strip()
+    if not extracted_url:
+        extracted_url = update.message.reply_to_message.text.strip()
 
     # Handle custom file name if present in the URL string
-    if "|" in youtube_dl_url:
-        url_parts = youtube_dl_url.split("|")
-        youtube_dl_url = url_parts[0].strip()
-        if len(url_parts) == 2:
-            custom_file_name = url_parts[1].strip()
+    youtube_dl_url_parts = extracted_url.split("|")
+    youtube_dl_url = youtube_dl_url_parts[0].strip()
+
+    if len(youtube_dl_url_parts) > 1:
+        if len(youtube_dl_url_parts) == 2:
+            custom_file_name_from_url = youtube_dl_url_parts[1].strip()
+            if custom_file_name_from_url:
+                custom_file_name = "".join(c if c.isalnum() or c in ('.', '_', '-') else '_' for c in custom_file_name_from_url)
     
     if not custom_file_name:
         custom_file_name = os.path.basename(youtube_dl_url)
