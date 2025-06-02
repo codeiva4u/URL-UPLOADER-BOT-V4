@@ -3,7 +3,7 @@ hachoir
 numpy
 Pillow
 requests
-tgcryptos
+tgcrypto
 olefile
 motor
 pytz
@@ -23,4 +23,5 @@ yt-dlp
 lk21
 pytube
 flask
-gunicorn==20.1.0
+gunicorn
+python-dotenv

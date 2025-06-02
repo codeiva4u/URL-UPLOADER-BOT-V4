@@ -42,6 +42,7 @@ class Config(object):
     TG_MIN_FILE_SIZE = 2194304000
     BOT_USERNAME = os.environ.get("BOT_USERNAME", "")
     ADL_BOT_RQ = {}
+    COOKIES_FILE = os.environ.get("COOKIES_FILE", "cookies.txt")
 
     # Set False off else True
     TRUE_OR_FALSE = os.environ.get("TRUE_OR_FALSE", "").lower() == "true"
@@ -52,5 +53,3 @@ class Config(object):
 
     # Verification video link
     VERIFICATION = os.environ.get("VERIFICATION", "")
-
-    
