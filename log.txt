@@ -1,0 +1,319 @@
+pyrogram.crypto.aes - INFO - Using TgCrypto
+pyrogram.session.auth - INFO - Start creating a new auth key on DC2
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC2 - IPv4
+pyrogram.session.auth - INFO - Done auth key exchange: DhGenOk
+pyrogram.connection.connection - INFO - Disconnected
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC2 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.session.session - INFO - PingTask stopped
+pyrogram.session.session - INFO - NetworkTask stopped
+pyrogram.connection.connection - INFO - Disconnected
+pyrogram.session.session - INFO - Session stopped
+pyrogram.session.auth - INFO - Start creating a new auth key on DC5
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.auth - INFO - Done auth key exchange: DhGenOk
+pyrogram.connection.connection - INFO - Disconnected
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.client - INFO - [@UploaderXNTBot] [LOAD] MessageHandler("broadcast_") in group 0 from "plugins.broadcast"
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN']
+root - INFO - Stop signal received (SIGINT). Exiting...
+plugins.echo - INFO - ERROR: Interrupted by user
+root - INFO - Stop signal received (SIGINT). Exiting...
+root - INFO - Stop signal received (SIGINT). Exiting...
+root - INFO - Stop signal received (SIGINT). Exiting...
+pyrogram.crypto.aes - INFO - Using TgCrypto
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.client - INFO - [@UploaderXNTBot] [LOAD] MessageHandler("broadcast_") in group 0 from "plugins.broadcast"
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN', '--socket-timeout', '10', '--retries', '3']
+root - INFO - Stop signal received (SIGINT). Exiting...
+plugins.echo - INFO - ERROR: Interrupted by user
+root - INFO - Stop signal received (SIGINT). Exiting...
+root - INFO - Stop signal received (SIGINT). Exiting...
+root - INFO - Stop signal received (SIGINT). Exiting...
+pyrogram.crypto.aes - INFO - Using TgCrypto
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.client - INFO - [@UploaderXNTBot] [LOAD] MessageHandler("broadcast_") in group 0 from "plugins.broadcast"
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN']
+root - INFO - Stop signal received (SIGINT). Exiting...
+plugins.echo - INFO - ERROR: Interrupted by user
+root - INFO - Stop signal received (SIGINT). Exiting...
+pyrogram.crypto.aes - INFO - Using TgCrypto
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.client - INFO - [@UploaderXNTBot] [LOAD] MessageHandler("broadcast_") in group 0 from "plugins.broadcast"
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN']
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://youtu.be/XLqmL9cPN1E?si=vAkYpUyOIlZAJQmn', '--geo-bypass-country', 'IN']
+plugins.echo - INFO - 
+plugins.button - INFO - ['yt-dlp', '-c', '--max-filesize', '2194304000', '--embed-subs', '-f', '399', '--hls-prefer-ffmpeg', '--cookies', 'cookies.txt', '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36', 'https://youtu.be/XLqmL9cPN1E?si=vAkYpUyOIlZAJQmn', '-o', './DOWNLOADS\\5837145103ETHNK\\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4', '--no-warnings']
+plugins.button - INFO - 
+plugins.button - INFO - [youtube] Extracting URL: https://youtu.be/XLqmL9cPN1E?si=vAkYpUyOIlZAJQmn
+[youtube] XLqmL9cPN1E: Downloading webpage
+[youtube] XLqmL9cPN1E: Downloading tv client config
+[youtube] XLqmL9cPN1E: Downloading tv player API JSON
+[info] XLqmL9cPN1E: Downloading 1 format(s): 399
+[info] There are no subtitles for the requested languages
+[download] Destination: DOWNLOADS\5837145103ETHNK\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4
+[download]   0.0% of   33.32MiB at   63.69KiB/s ETA 08:55[download]   0.0% of   33.32MiB at  191.06KiB/s ETA 02:58[download]   0.0% of   33.32MiB at  445.80KiB/s ETA 01:16[download]   0.0% of   33.32MiB at  955.29KiB/s ETA 00:35[download]   0.1% of   33.32MiB at  983.97KiB/s ETA 00:34[download]   0.2% of   33.32MiB at    1.30MiB/s ETA 00:25[download]   0.4% of   33.32MiB at    1.56MiB/s ETA 00:21[download]   0.7% of   33.32MiB at    2.07MiB/s ETA 00:15[download]   1.5% of   33.32MiB at    2.62MiB/s ETA 00:12[download]   3.0% of   33.32MiB at    3.33MiB/s ETA 00:09[download]   6.0% of   33.32MiB at    3.64MiB/s ETA 00:08[download]  12.0% of   33.32MiB at    4.63MiB/s ETA 00:06[download]  24.0% of   33.32MiB at    4.78MiB/s ETA 00:05[download]  29.4% of   33.32MiB at    5.00MiB/s ETA 00:04[download]  29.4% of   33.32MiB at   63.60KiB/s ETA 06:18[download]  29.4% of   33.32MiB at  190.79KiB/s ETA 02:06[download]  29.4% of   33.32MiB at  445.17KiB/s ETA 00:54[download]  29.4% of   33.32MiB at  738.23KiB/s ETA 00:32[download]  29.5% of   33.32MiB at    1.49MiB/s ETA 00:15[download]  29.6% of   33.32MiB at    3.03MiB/s ETA 00:07[download]  29.7% of   33.32MiB at    3.92MiB/s ETA 00:05[download]  30.1% of   33.32MiB at    5.21MiB/s ETA 00:04[download]  30.9% of   33.32MiB at    4.48MiB/s ETA 00:05[download]  32.4% of   33.32MiB at    5.25MiB/s ETA 00:04[download]  35.4% of   33.32MiB at    5.74MiB/s ETA 00:03[download]  41.4% of   33.32MiB at    6.16MiB/s ETA 00:03[download]  53.4% of   33.32MiB at    5.67MiB/s ETA 00:02[download]  59.0% of   33.32MiB at    5.50MiB/s ETA 00:02[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.1% of   33.32MiB at  969.25KiB/s ETA 00:14  [download]  59.2% of   33.32MiB at    1.92MiB/s ETA 00:07[download]  59.4% of   33.32MiB at    2.59MiB/s ETA 00:05[download]  59.7% of   33.32MiB at    3.12MiB/s ETA 00:04[download]  60.5% of   33.32MiB at    3.91MiB/s ETA 00:03[download]  62.0% of   33.32MiB at    5.21MiB/s ETA 00:02[download]  65.0% of   33.32MiB at    4.19MiB/s ETA 00:02[download]  71.0% of   33.32MiB at    4.28MiB/s ETA 00:02[download]  83.0% of   33.32MiB at    3.62MiB/s ETA 00:01[download]  88.4% of   33.32MiB at    3.66MiB/s ETA 00:01[download]  88.4% of   33.32MiB at  Unknown B/s ETA Unknown[download]  88.4% of   33.32MiB at  207.54KiB/s ETA 00:19  [download]  88.4% of   33.32MiB at  484.25KiB/s ETA 00:08[download]  88.5% of   33.32MiB at    1.01MiB/s ETA 00:03[download]  88.5% of   33.32MiB at    1.81MiB/s ETA 00:02[download]  88.6% of   33.32MiB at    1.90MiB/s ETA 00:02[download]  88.8% of   33.32MiB at    3.12MiB/s ETA 00:01[download]  89.2% of   33.32MiB at    4.78MiB/s ETA 00:00[download]  89.9% of   33.32MiB at    3.13MiB/s ETA 00:01[download]  91.4% of   33.32MiB at    3.67MiB/s ETA 00:00[download]  94.4% of   33.32MiB at    3.65MiB/s ETA 00:00[download] 100.0% of   33.32MiB at    4.00MiB/s ETA 00:00[download] 100% of   33.32MiB in 00:00:08 at 4.10MiB/s   
+[EmbedSubtitle] There aren't any subtitles to embed
+plugins.button - INFO - [youtube] Extracting URL: https://youtu.be/XLqmL9cPN1E?si=vAkYpUyOIlZAJQmn
+[youtube] XLqmL9cPN1E: Downloading webpage
+[youtube] XLqmL9cPN1E: Downloading tv client config
+[youtube] XLqmL9cPN1E: Downloading tv player API JSON
+[info] XLqmL9cPN1E: Downloading 1 format(s): 399
+[info] There are no subtitles for the requested languages
+[download] Destination: DOWNLOADS\5837145103ETHNK\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4
+[download]   0.0% of   33.32MiB at   63.69KiB/s ETA 08:55[download]   0.0% of   33.32MiB at  191.06KiB/s ETA 02:58[download]   0.0% of   33.32MiB at  445.80KiB/s ETA 01:16[download]   0.0% of   33.32MiB at  955.29KiB/s ETA 00:35[download]   0.1% of   33.32MiB at  983.97KiB/s ETA 00:34[download]   0.2% of   33.32MiB at    1.30MiB/s ETA 00:25[download]   0.4% of   33.32MiB at    1.56MiB/s ETA 00:21[download]   0.7% of   33.32MiB at    2.07MiB/s ETA 00:15[download]   1.5% of   33.32MiB at    2.62MiB/s ETA 00:12[download]   3.0% of   33.32MiB at    3.33MiB/s ETA 00:09[download]   6.0% of   33.32MiB at    3.64MiB/s ETA 00:08[download]  12.0% of   33.32MiB at    4.63MiB/s ETA 00:06[download]  24.0% of   33.32MiB at    4.78MiB/s ETA 00:05[download]  29.4% of   33.32MiB at    5.00MiB/s ETA 00:04[download]  29.4% of   33.32MiB at   63.60KiB/s ETA 06:18[download]  29.4% of   33.32MiB at  190.79KiB/s ETA 02:06[download]  29.4% of   33.32MiB at  445.17KiB/s ETA 00:54[download]  29.4% of   33.32MiB at  738.23KiB/s ETA 00:32[download]  29.5% of   33.32MiB at    1.49MiB/s ETA 00:15[download]  29.6% of   33.32MiB at    3.03MiB/s ETA 00:07[download]  29.7% of   33.32MiB at    3.92MiB/s ETA 00:05[download]  30.1% of   33.32MiB at    5.21MiB/s ETA 00:04[download]  30.9% of   33.32MiB at    4.48MiB/s ETA 00:05[download]  32.4% of   33.32MiB at    5.25MiB/s ETA 00:04[download]  35.4% of   33.32MiB at    5.74MiB/s ETA 00:03[download]  41.4% of   33.32MiB at    6.16MiB/s ETA 00:03[download]  53.4% of   33.32MiB at    5.67MiB/s ETA 00:02[download]  59.0% of   33.32MiB at    5.50MiB/s ETA 00:02[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.0% of   33.32MiB at  Unknown B/s ETA Unknown[download]  59.1% of   33.32MiB at  969.25KiB/s ETA 00:14  [download]  59.2% of   33.32MiB at    1.92MiB/s ETA 00:07[download]  59.4% of   33.32MiB at    2.59MiB/s ETA 00:05[download]  59.7% of   33.32MiB at    3.12MiB/s ETA 00:04[download]  60.5% of   33.32MiB at    3.91MiB/s ETA 00:03[download]  62.0% of   33.32MiB at    5.21MiB/s ETA 00:02[download]  65.0% of   33.32MiB at    4.19MiB/s ETA 00:02[download]  71.0% of   33.32MiB at    4.28MiB/s ETA 00:02[download]  83.0% of   33.32MiB at    3.62MiB/s ETA 00:01[download]  88.4% of   33.32MiB at    3.66MiB/s ETA 00:01[download]  88.4% of   33.32MiB at  Unknown B/s ETA Unknown[download]  88.4% of   33.32MiB at  207.54KiB/s ETA 00:19  [download]  88.4% of   33.32MiB at  484.25KiB/s ETA 00:08[download]  88.5% of   33.32MiB at    1.01MiB/s ETA 00:03[download]  88.5% of   33.32MiB at    1.81MiB/s ETA 00:02[download]  88.6% of   33.32MiB at    1.90MiB/s ETA 00:02[download]  88.8% of   33.32MiB at    3.12MiB/s ETA 00:01[download]  89.2% of   33.32MiB at    4.78MiB/s ETA 00:00[download]  89.9% of   33.32MiB at    3.13MiB/s ETA 00:01[download]  91.4% of   33.32MiB at    3.67MiB/s ETA 00:00[download]  94.4% of   33.32MiB at    3.65MiB/s ETA 00:00[download] 100.0% of   33.32MiB at    4.00MiB/s ETA 00:00[download] 100% of   33.32MiB in 00:00:08 at 4.10MiB/s   
+[EmbedSubtitle] There aren't any subtitles to embed
+plugins.button - ERROR - Error removing downloaded file ./DOWNLOADS\5837145103ETHNK\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4: [WinError 32] The process cannot access the file because it is being used by another process: './DOWNLOADS\\5837145103ETHNK\\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4'
+plugins.button - ERROR - Error cleaning up temporary directory ./DOWNLOADS\5837145103ETHNK: [WinError 32] The process cannot access the file because it is being used by another process: './DOWNLOADS\\5837145103ETHNK\\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4'
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN']
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '--geo-bypass-country', 'IN']
+pyrogram.crypto.aes - INFO - Using TgCrypto
+pyrogram.connection.connection - INFO - Connecting...
+pyrogram.connection.connection - INFO - Connected! Production DC5 - IPv4
+pyrogram.session.session - INFO - NetworkTask started
+pyrogram.session.session - INFO - Session initialized: Layer 203
+pyrogram.session.session - INFO - Device: CPython 3.12.10 - Pyrogram 2.3.63
+pyrogram.session.session - INFO - System: Windows 11 (en)
+pyrogram.session.session - INFO - Session started
+pyrogram.session.session - INFO - PingTask started
+pyrogram.client - INFO - [@UploaderXNTBot] [LOAD] MessageHandler("broadcast_") in group 0 from "plugins.broadcast"
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E', '--geo-bypass-country', 'IN']
+plugins.echo - INFO - 
+plugins.button - INFO - ['yt-dlp', '-c', '--max-filesize', '2194304000', '--embed-subs', '-f', '313', '--hls-prefer-ffmpeg', '--cookies', 'cookies.txt', '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '-o', './DOWNLOADS\\5837145103tToHb\\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_313.webm', '--no-warnings']
+plugins.echo - INFO - {
+    "_": "User",
+    "id": 5837145103,
+    "is_self": false,
+    "is_contact": false,
+    "is_mutual_contact": false,
+    "is_deleted": false,
+    "is_frozen": false,
+    "is_bot": false,
+    "is_verified": false,
+    "is_restricted": false,
+    "is_scam": false,
+    "is_fake": false,
+    "is_support": false,
+    "is_premium": false,
+    "is_contacts_only": false,
+    "is_bot_business": false,
+    "first_name": "Ivan Sunil",
+    "last_name": "Arya",
+    "status": "UserStatus.RECENTLY",
+    "language_code": "en"
+}
+plugins.echo - INFO - ['yt-dlp', '--no-warnings', '--allow-dynamic-mpd', '--cookies', 'cookies.txt', '--no-check-certificate', '-j', 'https://www.youtube.com/watch?v=XLqmL9cPN1E', '--geo-bypass-country', 'IN']
+plugins.echo - INFO - 
+plugins.button - INFO - ['yt-dlp', '-c', '--max-filesize', '2194304000', '--embed-subs', '-f', '399', '--hls-prefer-ffmpeg', '--cookies', 'cookies.txt', '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36', 'https://www.youtube.com/watch?v=XLqmL9cPN1E&list=RDFZLadzn5i6Q&index=5', '-o', './DOWNLOADS\\5837145103GlUqt\\Teri Baaton Mein Aisa Uljha Jiya Title Track Shahid Kapoor Kriti Sanon  RaghavTanishkAsees_399.mp4', '--no-warnings']

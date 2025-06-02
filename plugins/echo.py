@@ -79,6 +79,16 @@ async def echo(bot, update):
     file_name = None
 
     print(url)
+    # Normalize YouTube URLs
+    if "youtu.be" in url:
+        video_id = url.split("/")[-1].split("?")[0]
+        url = f"https://www.youtube.com/watch?v={video_id}"
+    elif "youtube.com/watch" in url:
+        # Extract only the video ID and create a clean URL
+        if "v=" in url:
+            video_id = url.split("v=")[1].split("&")[0]
+            url = f"https://www.youtube.com/watch?v={video_id}"
+
     if "|" in url:
         url_parts = url.split("|")
         if len(url_parts) == 2:

@@ -255,7 +255,7 @@ async def youtube_dl_call_back(bot, update):
                     )
                 )
             else:
-                logger.info("✅ " + custom_file_name)
+                logger.info("Downloaded file: " + custom_file_name)
             
             end_two = datetime.now()
             time_taken_for_upload = (end_two - end_one).seconds
@@ -273,33 +273,48 @@ async def youtube_dl_call_back(bot, update):
                 if os.path.exists(download_directory):
                     try:
                         os.remove(download_directory)
-                        logger.info(f"Successfully removed downloaded file: {download_directory}")
+                        logger.info("Successfully removed downloaded file: " + download_directory)
                     except Exception as e:
-                        logger.error(f"Error removing downloaded file {download_directory}: {e}")
+                        logger.error("Error removing downloaded file " + download_directory + ": " + str(e))
+                        # Try to force close any handles to the file
+                        try:
+                            import psutil
+                            for proc in psutil.process_iter(['pid', 'open_files']):
+                                try:
+                                    for file in proc.open_files():
+                                        if download_directory in file.path:
+                                            proc.kill()
+                                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                    pass
+                            # Try removing again after killing processes
+                            if os.path.exists(download_directory):
+                                os.remove(download_directory)
+                        except Exception as e2:
+                            logger.error("Failed to force remove file: " + str(e2))
                 
                 # Then cleanup the temporary user directory
                 tmp_dir = os.path.dirname(download_directory)
                 if os.path.exists(tmp_dir):
                     try:
                         shutil.rmtree(tmp_dir)
-                        logger.info(f"Successfully cleaned up temporary directory: {tmp_dir}")
+                        logger.info("Successfully cleaned up temporary directory: " + tmp_dir)
                     except Exception as e:
-                        logger.error(f"Error cleaning up temporary directory {tmp_dir}: {e}")
+                        logger.error("Error cleaning up temporary directory " + tmp_dir + ": " + str(e))
                 
                 # Remove thumbnail if exists
                 if thumbnail_path and os.path.exists(thumbnail_path):
                     try:
                         os.remove(thumbnail_path)
-                        logger.info(f"Successfully removed thumbnail: {thumbnail_path}")
+                        logger.info("Successfully removed thumbnail: " + thumbnail_path)
                     except Exception as e:
-                        logger.error(f"Error removing thumbnail: {e}")
+                        logger.error("Error removing thumbnail: " + str(e))
                 
             except Exception as e:
-                logger.error(f"Error in cleanup process: {e}")
+                logger.error("Error in cleanup process: " + str(e))
             
             await update.message.edit_caption(
                 caption=Translation.AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS.format(time_taken_for_download, time_taken_for_upload)
             )
             
-            logger.info(f"✅ Downloaded in: {time_taken_for_download} seconds")
-            logger.info(f"✅ Uploaded in: {time_taken_for_upload} seconds")
+            logger.info("Downloaded in: " + str(time_taken_for_download) + " seconds")
+            logger.info("Uploaded in: " + str(time_taken_for_upload) + " seconds")
