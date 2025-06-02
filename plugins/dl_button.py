@@ -32,36 +32,38 @@ async def ddl_call_back(bot, update):
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("=")
     thumb_image_path = Config.DOWNLOAD_LOCATION + \
         "/" + str(update.from_user.id) + ".jpg"
-    youtube_dl_url = update.message.reply_to_message.text
-    custom_file_name = os.path.basename(youtube_dl_url)
-    if "|" in youtube_dl_url:
-        url_parts = youtube_dl_url.split("|")
-        if len(url_parts) == 2:
-            youtube_dl_url = url_parts[0]
-            custom_file_name = url_parts[1]
-        else:
-            for entity in update.message.reply_to_message.entities:
-                if entity.type == "text_link":
-                    youtube_dl_url = entity.url
-                elif entity.type == "url":
-                    o = entity.offset
-                    l = entity.length
-                    youtube_dl_url = youtube_dl_url[o:o + l]
-        if youtube_dl_url is not None:
-            youtube_dl_url = youtube_dl_url.strip()
-        if custom_file_name is not None:
-            custom_file_name = custom_file_name.strip()
-        # https://stackoverflow.com/a/761825/4723940
-        logger.info(youtube_dl_url)
-        logger.info(custom_file_name)
-    else:
+    youtube_dl_url = None
+    custom_file_name = None
+
+    # Extract URL from message entities first
+    if update.message.reply_to_message.entities:
         for entity in update.message.reply_to_message.entities:
-            if entity.type == "text_link":
+            if entity.type == enums.MessageEntityType.TEXT_LINK:
                 youtube_dl_url = entity.url
-            elif entity.type == "url":
+                break
+            elif entity.type == enums.MessageEntityType.URL:
                 o = entity.offset
                 l = entity.length
-                youtube_dl_url = youtube_dl_url[o:o + l]
+                youtube_dl_url = update.message.reply_to_message.text[o:o + l]
+                break
+
+    # If URL not found in entities, use the message text directly
+    if not youtube_dl_url:
+        youtube_dl_url = update.message.reply_to_message.text.strip()
+
+    # Handle custom file name if present in the URL string
+    if "|" in youtube_dl_url:
+        url_parts = youtube_dl_url.split("|")
+        youtube_dl_url = url_parts[0].strip()
+        if len(url_parts) == 2:
+            custom_file_name = url_parts[1].strip()
+    
+    if not custom_file_name:
+        custom_file_name = os.path.basename(youtube_dl_url)
+
+    logger.info(f"Extracted URL: {youtube_dl_url}")
+    logger.info(f"Custom file name: {custom_file_name}")
+
     description = Translation.CUSTOM_CAPTION_UL_FILE
     start = datetime.now()
     await update.message.edit_caption(
