@@ -24,11 +24,11 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         progress = "{0}{1}".format(
             
             ''.join(["🟨" for i in range(math.floor(percentage / 12))]),
-            ''.join(["⬜️" for i in range(10 - math.floor(percentage / 12))])
+            ''.join(["⬜️" for i in range(12 - math.floor(percentage / 12))])
         )
 
         tmp = progress + Translation.PROGRESS.format(
-            round(percentage, 2),
+            round(percentage, 0),
             humanbytes(current),
             humanbytes(total),
             humanbytes(speed),
