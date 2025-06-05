@@ -20,8 +20,9 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 from plugins.functions.display_progress import progress_for_pyrogram, humanbytes, TimeFormatter
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
+from plugins.functions.help_Nekmo_ffmpeg import ensure_audio_video_sync
 from PIL import Image
-from pyrogram import enums 
+from pyrogram import enums
 
 
 
@@ -112,12 +113,23 @@ async def ddl_call_back(bot, update):
                 parse_mode=enums.ParseMode.HTML
             )
         else:
+            # Process the video to ensure audio-video synchronization
+            await update.message.edit_caption(
+                caption="Processing video to ensure audio-video synchronization...",
+                parse_mode=enums.ParseMode.HTML
+            )
+            
+            # Get the directory path for processing
+            process_dir = os.path.dirname(download_directory)
+            
+            # Apply audio-video synchronization
+            synced_file = await ensure_audio_video_sync(download_directory, process_dir)
             
             start_time = time.time()
             if (await db.get_upload_as_doc(update.from_user.id)) is False:
                 thumbnail = await Gthumb01(bot, update)
                 await update.message.reply_document(
-                    document=download_directory,
+                    document=synced_file,
                     thumb=thumbnail,
                     caption=description,
                     parse_mode=enums.ParseMode.HTML,
@@ -129,10 +141,10 @@ async def ddl_call_back(bot, update):
                     )
                 )
             else:
-                 width, height, duration = await Mdata01(download_directory)
-                 thumb_image_path = await Gthumb02(bot, update, duration, download_directory)
+                 width, height, duration = await Mdata01(synced_file)
+                 thumb_image_path = await Gthumb02(bot, update, duration, synced_file)
                  await update.message.reply_video(
-                    video=download_directory,
+                    video=synced_file,
                     caption=description,
                     duration=duration,
                     width=width,

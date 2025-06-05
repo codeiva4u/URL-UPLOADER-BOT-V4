@@ -147,3 +147,45 @@ async def generate_screen_shots(
         return None
 
 
+async def ensure_audio_video_sync(input_file, output_directory):
+    """
+    Ensures audio and video are properly synchronized by remuxing the file.
+    This solves common sync issues without re-encoding (which would be slower).
+    """
+    output_file = os.path.join(
+        output_directory,
+        str(round(time.time())) + "_synced.mp4"
+    )
+    
+    # Use FFmpeg to remux the file (copy streams without re-encoding)
+    # -c copy: Copy all streams without re-encoding
+    # -vsync 2: Helps with synchronization issues
+    # -max_muxing_queue_size 9999: Helps with complex files
+    remux_command = [
+        "ffmpeg",
+        "-i", input_file,
+        "-c", "copy",
+        "-vsync", "2",
+        "-max_muxing_queue_size", "9999",
+        "-movflags", "+faststart",  # Optimize for streaming
+        output_file
+    ]
+    
+    process = await asyncio.create_subprocess_exec(
+        *remux_command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    
+    # Wait for the subprocess to finish
+    stdout, stderr = await process.communicate()
+    e_response = stderr.decode().strip()
+    t_response = stdout.decode().strip()
+    
+    if os.path.lexists(output_file):
+        return output_file
+    else:
+        logger.error(f"Failed to sync A/V: {e_response}")
+        return input_file  # Return original if processing failed
+
+

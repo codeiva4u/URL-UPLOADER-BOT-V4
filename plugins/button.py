@@ -16,6 +16,7 @@ from plugins.functions.display_progress import progress_for_pyrogram, humanbytes
 from plugins.database.database import db
 from PIL import Image
 from plugins.functions.ran_text import random_char
+from plugins.functions.help_Nekmo_ffmpeg import ensure_audio_video_sync
 cookies_file = 'cookies.txt'
 # Set up logging
 logging.basicConfig(level=logging.DEBUG,
@@ -189,13 +190,23 @@ async def youtube_dl_call_back(bot, update):
             )
         else:
             await update.message.edit_caption(
+                caption="Processing video to ensure audio-video synchronization..."
+            )
+            
+            # Get the directory path for processing
+            process_dir = os.path.dirname(download_directory)
+            
+            # Apply audio-video synchronization
+            synced_file = await ensure_audio_video_sync(download_directory, process_dir)
+            
+            await update.message.edit_caption(
                 caption=Translation.UPLOAD_START.format(custom_file_name)
             )
             start_time = time.time()
             if not await db.get_upload_as_doc(update.from_user.id):
                 thumbnail = await Gthumb01(bot, update)
                 await update.message.reply_document(
-                    document=download_directory,
+                    document=synced_file,
                     thumb=thumbnail,
                     caption=description,
                     progress=progress_for_pyrogram,
@@ -206,10 +217,10 @@ async def youtube_dl_call_back(bot, update):
                     )
                 )
             else:
-                width, height, duration = await Mdata01(download_directory)
-                thumb_image_path = await Gthumb02(bot, update, duration, download_directory)
+                width, height, duration = await Mdata01(synced_file)
+                thumb_image_path = await Gthumb02(bot, update, duration, synced_file)
                 await update.message.reply_video(
-                    video=download_directory,
+                    video=synced_file,
                     caption=description,
                     duration=duration,
                     width=width,
